@@ -4,10 +4,12 @@ require('./config/db');
 const express = require('express');
 const app = express();
 
+const planRoutes = require('./routes/planRoutes')
+
 app.use(express.json());
 
 
-
+app.use('/api/plan', planRoutes);
 
 
 
