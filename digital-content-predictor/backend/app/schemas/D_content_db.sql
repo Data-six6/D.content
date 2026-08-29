@@ -45,3 +45,13 @@ CREATE TABLE PlanInterest (
 	FOREIGN KEY (plan_id) REFERENCES Plan(plan_id) ON DELETE CASCADE,
 	FOREIGN KEY (interest_id) REFERENCES Interest(interest_id) ON DELETE CASCADE
 );
+
+CREATE TABLE SavedPlan (
+	saved_plan_id INT AUTO_INCREMENT PRIMARY key,
+    user_id INT NOT NULL,
+    plan_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (plan_id) REFERENCES Plan(plan_id) ON DELETE CASCADE
+);
+
