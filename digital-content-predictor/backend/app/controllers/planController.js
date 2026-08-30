@@ -3,9 +3,6 @@ const Plan = require('../models/Plan');
 exports.createNewPlan = async (req, res) => {
     try {
         const { userId } = req.user;
-        if (!userId) {
-            return res.status(400).json({ error: 'Invalid user id' });
-        }
         const {
             plan_purpose: planPurpose,
             product_name: productName,
@@ -18,7 +15,7 @@ exports.createNewPlan = async (req, res) => {
             plan_channel: planChannel,
         } = req.body;
 
-        if (!planPurpose || !productName || !productCategoryId || !demographicsAge || !demographicsGender || !planChannel || !planGoal) {
+        if (!userId || !planPurpose || !productName || !productCategoryId || !demographicsAge || !demographicsGender || !planChannel || !planGoal) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
@@ -85,6 +82,49 @@ exports.viewPlansHistory = async (req, res) => {
         console.error(err);
         res.status(500).json({
             error: 'Failed to fetch history'
+        });
+    }
+};
+
+exports.createNewSavedPlan = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const { plan_id: planId } = req.body;
+
+        if (!userId || !planId) {
+            return res.status(400).json({ 
+                error: 'Missing required fields' 
+            });
+        }
+        
+        const savedPlan = await Plan.createSavedPlan({
+            userId,
+            planId
+        })
+        return res.status(201).json({
+            message: 'Plan saved successfully',
+            planId
+        });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                error: 'Failed to create plan'
+        });
+    
+    }
+}
+
+exports.viewSavedPlan = async (req, res) => {
+    try {
+        const { userId } = req.user;
+
+        const saved = await Plan.viewSavedPlan(userId);
+
+        return res.status(200).json({ saved });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: 'Failed to fetch saved plans'
         });
     }
 };

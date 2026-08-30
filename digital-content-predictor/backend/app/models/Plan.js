@@ -22,6 +22,21 @@ class Plan {
         );
         return rows || null;
     }
+
+    static async createSavedPlan(data) {
+        const [result] = await db.query(
+            "INSERT INTO SavedPlan (user_id, plan_id) VALUES (?, ?)",
+            [data.userId, data.planId]
+        );
+        return result.insertId;
+    }
+    
+    static async viewSavedPlan(userId, planId){
+        const [rows] = await db.query(
+            "SELECT * FROM SavedPlan WHERE user_id = ?",  [userId]
+        );
+        return rows || null;
+    }
 }
 
 module.exports = Plan;
