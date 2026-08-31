@@ -1,4 +1,4 @@
-export default function PredictionCard() {
+export default function Prediction() {
   return (
     <div>
       <h1>PredictionCard</h1>
