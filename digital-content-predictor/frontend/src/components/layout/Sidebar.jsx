@@ -1,78 +1,109 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
+import { NavLink } from "react-router-dom";
+import {
+  LayoutDashboard,
+  PlusCircle,
+  History,
+  Bookmark,
+  CreditCard,
+  UserCircle,
+  HelpCircle,
+  Settings,
+} from "lucide-react";
 
 const items = [
-  ["Dashboard", "▦", "/dashboard"],
-  ["Create Content", "+", "/create-content"],
-  ["My Plans", "▤", "/my-plans"],
-  ["Saved Ideas", "♡", "/saved-ideas"],
-  ["Pricing", "◇", "/pricing"],
-  ["Profile", "◉", "/profile"],
+  ["Dashboard", LayoutDashboard, "/dashboard"],
+  ["Create Plan", PlusCircle, "/create-plan"],
+  ["History", History, "/my-plans"],
+  ["Saved Ideas", Bookmark, "/saved-ideas"],
+  ["Pricing", CreditCard, "/pricing"],
+  ["Profile", UserCircle, "/profile"],
+];
+
+const secondaryItems = [
+  ["Help Center", HelpCircle, "/resources"],
+  ["Settings", Settings, "/profile"],
+  ["Profile", UserCircle, "/profile"],
 ];
 
 export default function Sidebar({ isOpen = false, onClose }) {
-  const navigate = useNavigate();
-  const { signOut } = useAuth();
-
-  function handleSignOut() {
-    signOut();
-    navigate("/login", { replace: true });
-    if (onClose) onClose();
-  }
 
   return (
     <aside
       className={[
-        "z-40 flex shrink-0 flex-col border-r border-[#d9dbea] bg-[#f2f3ff] shadow-sm transition-all duration-300 ease-in-out",
-        "lg:static lg:inset-auto lg:h-screen",
-        isOpen ? "w-[260px] translate-x-0" : "w-0 translate-x-[-100%] overflow-hidden border-r-0 lg:w-0 lg:translate-x-0",
-        "fixed inset-y-0 left-0 lg:fixed lg:inset-y-0 lg:left-0",
+        "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
+        "w-[180px] border-r border-[#ebedf7]",
+        isOpen ? "translate-x-0" : "-translate-x-full",
+        "lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none",
       ].join(" ")}
     >
-      <div className={[
-        "flex min-h-20 items-center justify-between px-5 transition-opacity duration-300 lg:px-4 lg:pt-7",
-        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
-      ].join(" ")}>
-        <div>
-          <div className="text-2xl font-bold tracking-tight text-[#4f46e5]">Meateka</div>
-          <div className="mt-0.5 text-xs font-medium text-[#667085]">Creator Suite</div>
+      <div className="flex items-center justify-between px-3 pb-4 pt-5">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#4f46e5] text-[10px] font-bold text-white shadow-sm">M</div>
+          <div className="min-w-0">
+            <div className="text-[13px] font-extrabold tracking-[-0.04em] text-[#1f2a44]">Meateka</div>
+            <div className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[#7c88a9]">Intelligence Platform</div>
+          </div>
         </div>
+
         <button
           type="button"
           aria-label="Close sidebar"
           onClick={onClose}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-lg font-semibold text-[#4f46e5] transition hover:bg-white/70"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-[#dfe2f1] bg-white text-lg font-semibold text-[#4f46e5] transition hover:bg-[#eef0ff] lg:hidden"
         >
           ×
         </button>
       </div>
 
-      <nav className={[
-        "flex gap-1 overflow-x-auto px-3 pb-3 transition-opacity duration-300 lg:mt-10 lg:block lg:space-y-1 lg:overflow-visible",
-        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
-      ].join(" ")} aria-label="Dashboard navigation">
-        {items.map(([label, icon, path]) => (
-          <NavLink
-            key={label}
-            to={path}
-            onClick={onClose}
-            className={({ isActive }) => `flex min-w-fit items-center gap-3 rounded-r-lg px-3 py-2.5 text-xs font-medium transition lg:w-full ${isActive ? "border-l-2 border-[#4f46e5] bg-[#dddffb] text-[#4f46e5]" : "border-l-2 border-transparent text-[#667085] hover:bg-white/70 hover:text-[#4f46e5]"}`}
-          >
-            <span className="w-4 text-center text-base leading-none" aria-hidden="true">{icon}</span>
-            {label}
-          </NavLink>
-        ))}
+      <nav className="mt-2 flex-1 px-2.5" aria-label="Dashboard navigation">
+        <ul className="space-y-1.5">
+          {items.map(([label, Icon, path]) => (
+            <li key={label}>
+              <NavLink
+                to={path}
+                onClick={onClose}
+                className={({ isActive }) => [
+                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
+                  isActive
+                    ? "bg-white text-[#3d42d9] shadow-[0_1px_0_rgba(15,23,42,0.02)]"
+                    : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
+                ].join(" ")}
+              >
+                {({ isActive }) => (
+                  <>
+                    <Icon
+                      size={15}
+                      strokeWidth={1.5}
+                      className={isActive ? "shrink-0 text-[#3d42d9]" : "shrink-0 text-[#4b5565]"}
+                    />
+                    <span className="truncate">{label}</span>
+                  </>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </nav>
 
-      <div className={[
-        "mt-auto px-3 pb-4 pt-4 transition-opacity duration-300 lg:px-4 lg:pb-6",
-        isOpen ? "opacity-100" : "pointer-events-none opacity-0",
-      ].join(" ")}>
-        <div className="flex items-center gap-2.5 border-t border-[#d9dbea] pt-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#d9dbff] text-[10px] font-bold text-[#4f46e5]">MC</div>
-          <div className="min-w-0 flex-1"><div className="text-xs font-semibold text-[#172033]">Profile</div><div className="text-[10px] text-[#98a2b3]">Creator account</div></div>
-          <button type="button" aria-label="Logout" onClick={handleSignOut} className="text-[10px] font-semibold text-[#4f46e5] hover:underline">Logout</button>
+      <div className="px-2.5 pb-4">
+        <div className="border-t border-[#e5e7f3] pt-3">
+          <div className="space-y-1.5">
+            {secondaryItems.map(([label, Icon, path]) => (
+              <NavLink
+                key={label}
+                to={path}
+                onClick={onClose}
+                className={({ isActive }) => [
+                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
+                  isActive ? "bg-white text-[#1f2a44]" : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
+                ].join(" ")}
+              >
+                <Icon size={15} strokeWidth={1.5} className="shrink-0" />
+                <span className="truncate">{label}</span>
+              </NavLink>
+            ))}
+          </div>
         </div>
       </div>
     </aside>

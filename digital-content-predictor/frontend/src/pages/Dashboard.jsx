@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar.jsx";
 import StatCard from "../components/dashboard/StatCard.jsx";
 import RecentPlatforms from "../components/dashboard/RecentPlatforms.jsx";
 import AIContent from "../components/ai/AIContent.jsx";
-import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -21,38 +21,27 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fafaff] text-[#172033]">
-      <div className="flex min-h-screen">
+    <div className="min-h-screen bg-[#f4f6fb] text-[#172033]">
+      <div className="flex min-h-screen overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <main className="relative min-w-0 flex-1 transition-all duration-300 ease-in-out">
-          {!isSidebarOpen && (
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              aria-label="Open sidebar"
-              className="fixed left-4 top-4 z-40 inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#d9dbea] bg-white text-xl font-bold text-[#4f46e5] shadow-sm transition-all duration-300 ease-in-out hover:bg-[#f2f3ff]"
-            >
-              ☰
-            </button>
-          )}
-
+        <main className="relative min-w-0 flex-1 bg-[#f7f9fd]">
           {isSidebarOpen && (
             <button
               type="button"
               aria-label="Close sidebar overlay"
               onClick={() => setIsSidebarOpen(false)}
-              className="fixed inset-0 z-30 bg-[#172033]/10 lg:hidden"
+              className="fixed inset-0 z-40 bg-slate-900/45 backdrop-blur-[1px] lg:hidden"
             />
           )}
 
-          <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-            <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm font-medium text-[#667085]">Welcome back</p>
-                <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#172033] sm:text-4xl">Ready to create your next content?</h1>
+                <h1 className="mt-1 text-3xl font-bold tracking-[-0.04em] text-[#172033] sm:text-4xl">Ready to create your next content?</h1>
               </div>
-              <button onClick={() => navigate("/create-content")} className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#4338ca]">
+              <button onClick={() => navigate("/create-content")} className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(79,70,229,0.22)] transition hover:bg-[#4338ca]">
                 <span className="text-lg leading-none" aria-hidden="true">+</span>
                 Create Content Plan
               </button>
