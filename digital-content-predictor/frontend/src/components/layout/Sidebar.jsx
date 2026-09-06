@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -9,7 +9,9 @@ import {
   UserCircle,
   HelpCircle,
   Settings,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 const items = [
   ["Dashboard", LayoutDashboard, "/dashboard"],
@@ -22,11 +24,18 @@ const items = [
 
 const secondaryItems = [
   ["Help Center", HelpCircle, "/resources"],
-  ["Settings", Settings, "/profile"],
-  ["Profile", UserCircle, "/profile"],
+  ["Settings", Settings, "/settings"],
 ];
 
 export default function Sidebar({ isOpen = false, onClose }) {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
+
+  function handleLogout() {
+    signOut();
+    onClose?.();
+    navigate("/", { replace: true });
+  }
 
   return (
     <aside
@@ -34,7 +43,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
         "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
         "w-[180px] border-r border-[#ebedf7]",
         isOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:shadow-none",
+        "lg:sticky lg:top-[72px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
       ].join(" ")}
     >
       <div className="flex items-center justify-between px-3 pb-4 pt-5">
@@ -104,6 +113,10 @@ export default function Sidebar({ isOpen = false, onClose }) {
               </NavLink>
             ))}
           </div>
+          <button type="button" onClick={handleLogout} className="mt-1.5 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium text-[#4b5565] transition-colors duration-150 hover:bg-white/70 hover:text-[#1f2a44]">
+            <LogOut size={15} strokeWidth={1.5} className="shrink-0" />
+            <span className="truncate">Log out</span>
+          </button>
         </div>
       </div>
     </aside>
