@@ -1,45 +1,63 @@
 const Plan = require('../models/Plan');
+const User = require('../models/User');
 
 exports.createNewPlan = async (req, res) => {
     try {
         const { userId } = req.user;
+        const userExists = await User.findById(userId);
+
+        if (!userExists) {
+            return res.status(401).json({ error: 'Authenticated user not found.' });
+        }
+
         const {
-            plan_purpose: planPurpose,
-            product_name: productName,
-            product_category_id: productCategoryId,
-            product_description: productDescription,
-            demographics_age: demographicsAge,
-            demographics_gender: demographicsGender,
-            audience_description: audienceDescription,
-            plan_goal: planGoal,
-            plan_channel: planChannel,
+            purpose: planPurpose,
+            product: productName,
+            category: productCategory,
+            productDescription,
+            age: demographicsAge,
+            gender: demographicsGender,
+            interests,
+            audienceDescription,
+            audience_description: audienceDescriptionAlt,
+            goal: planGoal,
+            channel: planChannel,
         } = req.body;
 
-        if (!userId || !planPurpose || !productName || !productCategoryId || !demographicsAge || !demographicsGender || !planChannel || !planGoal) {
+        const normalizedInterests = Array.isArray(interests)
+            ? interests.map((item) => String(item).trim()).filter(Boolean)
+            : (typeof interests === 'string' && interests.trim()
+                ? interests.split(',').map((item) => item.trim()).filter(Boolean)
+                : []);
+
+        const normalizedAudienceDescription = audienceDescription || audienceDescriptionAlt || '';
+
+        if (!userId || !planPurpose || !productName || !productCategory || !demographicsAge || !demographicsGender || normalizedInterests.length === 0 || !planChannel || !planGoal) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
         const planId = await Plan.createPlan({
-            userId: userId,
+            userId,
             planPurpose,
             productName,
-            productCategoryId, 
-            productDescription, 
-            demographicsAge, 
-            demographicsGender, 
-            audienceDescription, 
-            planGoal, 
-            planChannel 
-        })
+            productCategory,
+            productDescription,
+            demographicsAge,
+            demographicsGender,
+            interests: normalizedInterests,
+            audienceDescription: normalizedAudienceDescription,
+            planGoal,
+            planChannel,
+        });
 
         return res.status(201).json({
             message: 'Plan created successfully',
-            planId
+            planId,
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({
-            error: 'Failed to create plan'
+            error: 'Failed to create plan',
         });
     }
 };
@@ -128,3 +146,21 @@ exports.viewSavedPlan = async (req, res) => {
         });
     }
 };
+exports.viewInterest = async (req, res) => {
+    try {
+        const interestsData = await Plan.getInterests();
+
+        // Safely extract names or fallback to an empty array
+        const interestNames = Array.isArray(interestsData)
+            ? interestsData.map(item => typeof item === 'string' ? item : item?.interest_name).filter(Boolean)
+            : [];
+
+        return res.status(200).json({ interests: interestNames });
+    } catch (err) {
+        console.error('Error in viewInterest:', err);
+        return res.status(500).json({
+            error: 'Failed to fetch interests'  
+        });
+    }
+};
+

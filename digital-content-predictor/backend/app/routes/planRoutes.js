@@ -3,10 +3,12 @@ const router = express.Router();
 const planController = require('../controllers/planController');
 const { authenticate } = require('../middleware/auth');
 
-router.post('/', authenticate, planController.createNewPlan);
+router.post('/create-content', authenticate, planController.createNewPlan);
 router.post('/saved', authenticate, planController.createNewSavedPlan);
-router.get('/history', authenticate, planController.viewPlansHistory);
-router.get('/saved/view', authenticate, planController.viewSavedPlan);
+router.get('/interest', authenticate, planController.viewInterest);
+router.get('/my-content', authenticate, planController.viewPlansHistory);
+router.get('/saved-ideas', authenticate, planController.viewSavedPlan);
 router.get('/:planId', authenticate, planController.findPlanById);
+
 
 module.exports = router;

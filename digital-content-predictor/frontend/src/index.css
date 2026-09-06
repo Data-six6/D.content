@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 html { scroll-behavior: smooth; }
-body { margin: 0; font-family: Georgia, "Times New Roman", serif; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif, serif; }
 button, a { font-family: inherit; }

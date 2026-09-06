@@ -24,11 +24,11 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/caption-hashtag" element={<ProtectedRoute><CaptionHashtag /></ProtectedRoute>} />
           <Route path="/content-ideas" element={<ProtectedRoute><ContentIdeas /></ProtectedRoute>} />
-          <Route path="/saved-ideas" element={<ProtectedRoute><ContentIdeas /></ProtectedRoute>} />
+          <Route path="/plan/saved-ideas" element={<ProtectedRoute><ContentIdeas /></ProtectedRoute>} />
           <Route path="/content-type" element={<ProtectedRoute><CreateContent /></ProtectedRoute>} />
           <Route path="/create-content" element={<ProtectedRoute><CreateContent /></ProtectedRoute>} />
-          <Route path="/my-content" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
-          <Route path="/my-plans" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
+          <Route path="/plan/interest" element={<ProtectedRoute><CreateContent /></ProtectedRoute>} />
+          <Route path="/plan/my-content" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
           <Route path="/platform" element={<ProtectedRoute><PlatformComparison /></ProtectedRoute>} />
           <Route path="/platform-comparison" element={<ProtectedRoute><PlatformComparison /></ProtectedRoute>} />
           <Route path="/posting" element={<ProtectedRoute><PostingTime /></ProtectedRoute>} />

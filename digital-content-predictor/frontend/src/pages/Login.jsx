@@ -9,18 +9,24 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const destination = location.state?.from?.pathname || "/dashboard";
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setIsSubmitting(true);
 
-    if (!signIn(email, password)) {
-      setError("Invalid email or password.");
+    const result = await signIn(email, password);
+
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setError(result.error);
       return;
     }
 
@@ -50,7 +56,9 @@ export default function Login() {
               <input id="password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-lg border border-[#cfd2e3] px-3 py-2.5 text-sm outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]" required />
             </div>
             {error && <p role="alert" className="text-sm font-medium text-[#c2415b]">{error}</p>}
-            <button type="submit" className="w-full rounded-lg bg-[#4f46e5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4338ca]">Sign In</button>
+            <button type="submit" disabled={isSubmitting} className="w-full rounded-lg bg-[#4f46e5] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-60">
+              {isSubmitting ? "Signing in..." : "Sign In"}
+            </button>
           </form>
 
           <div className="my-7 flex items-center gap-3 text-xs text-[#98a2b3]"><span className="h-px flex-1 bg-[#eaebf2]" />or<span className="h-px flex-1 bg-[#eaebf2]" /></div>

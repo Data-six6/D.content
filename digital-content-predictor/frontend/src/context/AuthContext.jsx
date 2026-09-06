@@ -1,14 +1,12 @@
 import React, { createContext, useContext, useState } from "react";
+import api from "../services/api";
 
-const STORAGE_KEY = "meateka_user";
-const DEMO_CREDENTIALS = {
-  email: "demo@meateka.com",
-  password: "Demo123!",
-};
+const TOKEN_KEY = "sl_token";
+const USER_KEY = "sl_user";
 
 const demoUser = {
   name: "Demo User",
-  email: DEMO_CREDENTIALS.email,
+  email: "demo@meateka.com",
   role: "Creator",
 };
 
@@ -16,7 +14,7 @@ const AuthContext = createContext(null);
 
 function readStoredUser() {
   try {
-    const storedUser = localStorage.getItem(STORAGE_KEY);
+    const storedUser = localStorage.getItem(USER_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
   } catch {
     return null;
@@ -26,31 +24,59 @@ function readStoredUser() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(readStoredUser);
 
-  function saveUser(nextUser) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUser));
+  function saveSession(token, nextUser) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
     setUser(nextUser);
   }
 
-  function signIn(email, password) {
-    if (email.trim().toLowerCase() !== DEMO_CREDENTIALS.email || password !== DEMO_CREDENTIALS.password) {
-      return false;
+  async function signIn(email, password) {
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password_hash: password,
+      });
+      saveSession(data.token, data.user);
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.error || "Invalid email or password.";
+      return { success: false, error: message };
     }
+  }
 
-    saveUser(demoUser);
-    return true;
+  async function signUp(email, password, firstName, lastName) {
+    try {
+      const { data } = await api.post("/auth/register", {
+        email,
+        password_hash: password,
+        first_name: firstName,
+        last_name: lastName,
+      });
+      saveSession(data.token, data.user);
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.error || "Failed to create account.";
+      return { success: false, error: message };
+    }
   }
 
   function signInDemo() {
-    saveUser(demoUser);
+    // Demo mode is a local-only stand-in and does not hit the API or
+    // carry a real JWT. Protected API calls will not succeed while in
+    // this mode; it's meant for UI walkthroughs only.
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+    setUser(demoUser);
   }
 
   function signOut() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), signIn, signInDemo, signOut }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), signIn, signUp, signInDemo, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -5,8 +5,8 @@ import { useAuth } from "../../context/AuthContext.jsx";
 const items = [
   ["Dashboard", "▦", "/dashboard"],
   ["Create Content", "+", "/create-content"],
-  ["My Plans", "▤", "/my-plans"],
-  ["Saved Ideas", "♡", "/saved-ideas"],
+  ["My Plans", "▤", "/plan/my-content"],
+  ["Saved Ideas", "♡", "/plan/saved-ideas"],
   ["Pricing", "◇", "/pricing"],
   ["Profile", "◉", "/profile"],
 ];
