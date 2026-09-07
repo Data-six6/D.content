@@ -8,6 +8,8 @@ const demoUser = {
   name: "Demo User",
   email: "demo@meateka.com",
   role: "Creator",
+  plan: "free",
+  workspace: { name: "My Workspace", createdAt: "" },
 };
 
 const AuthContext = createContext(null);
@@ -21,8 +23,18 @@ function readStoredUser() {
   }
 }
 
+function readStoredPlan() {
+  try {
+    const storedPlan = localStorage.getItem(PLAN_STORAGE_KEY);
+    return storedPlan === "premium" ? "premium" : "free";
+  } catch {
+    return "free";
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(readStoredUser);
+  const [plan, setPlanState] = useState(readStoredPlan);
 
   function saveSession(token, nextUser) {
     localStorage.setItem(TOKEN_KEY, token);
@@ -73,6 +85,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setUser(null);
+    setPlanState(readStoredPlan());
   }
 
   return (
