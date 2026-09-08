@@ -63,3 +63,53 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'Failed to log in' });
   }
 };
+
+exports.fetchUserInfo = async (req,res) => {
+    try {
+      const { userId } = req.user;
+
+      const user = await User.findById(userId);
+      
+      return res.status(200).json({ user });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+
+    const storedHash = await User.getPasswordById(userId);
+    if (!storedHash) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const isCurrentValid = await bcrypt.compare(currentPassword, storedHash);
+    if (!isCurrentValid) {
+      return res.status(422).json({ error: 'Current password is incorrect' });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.updatePassword(userId, hashed);
+
+    return res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to update password' });
+  }
+};

@@ -95,6 +95,22 @@ class Plan {
         return rows || [];
     }
 
+    static async getDashboardData(userId) {
+        const [rows] = await db.query(
+            "SELECT (SELECT COUNT(*) FROM Plan WHERE user_id = ?) AS planCount,(SELECT COUNT(*) FROM SavedPlan WHERE user_id = ?) AS savedCount", [userId, userId]
+        );
+        return rows[0] || null;
+    }
+
+    static async getRecentPlan(userId) {
+        const [rows] = await db.query(
+            "SELECT * from Plan WHERE user_id = ? ORDER BY created_at DESC LIMIT 2", [userId]
+        );
+        return rows || null;
+    }
+
+
+
 }
 
 module.exports = Plan;

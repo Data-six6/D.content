@@ -15,9 +15,9 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 const items = [
   ["Dashboard", LayoutDashboard, "/dashboard"],
-  ["Create Plan", PlusCircle, "/create-plan"],
-  ["History", History, "/my-plans"],
-  ["Saved Ideas", Bookmark, "/saved-ideas"],
+  ["Create Plan", PlusCircle, "/create-content"],
+  ["History", History, "/plan/my-content"],
+  ["Saved Ideas", Bookmark, "/plan/saved-ideas"],
   ["Pricing", CreditCard, "/pricing"],
   ["Profile", UserCircle, "/profile"],
 ];
@@ -43,16 +43,16 @@ export default function Sidebar({ isOpen = false, onClose }) {
         "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
         "w-[180px] border-r border-[#ebedf7]",
         isOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:sticky lg:top-[72px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
+        "lg:sticky lg:top-[16px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between px-3 pb-4 pt-5">
+      <div className="flex items-center justify-between px-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#4f46e5] text-[10px] font-bold text-white shadow-sm">M</div>
+          {/* <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#4f46e5] text-[10px] font-bold text-white shadow-sm">M</div>
           <div className="min-w-0">
             <div className="text-[13px] font-extrabold tracking-[-0.04em] text-[#1f2a44]">Meateka</div>
             <div className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[#7c88a9]">Intelligence Platform</div>
-          </div>
+          </div> */}
         </div>
 
         <button

@@ -34,6 +34,8 @@ function AppShell() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Signup />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/plan/dashboard-data" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        
         <Route path="/caption-hashtag" element={<ProtectedRoute><CaptionHashtag /></ProtectedRoute>} />
         <Route path="/content-ideas" element={<ProtectedRoute><ContentIdeas /></ProtectedRoute>} />
         <Route path="/plan/saved-ideas" element={<ProtectedRoute><ContentIdeas /></ProtectedRoute>} />

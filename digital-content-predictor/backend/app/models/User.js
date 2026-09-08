@@ -23,7 +23,20 @@ class User {
     );
     return rows[0] || null;
   }
+    static async updatePassword(userId, newPassword) {
+    await db.query(
+      'UPDATE users SET password_hash = ? WHERE user_id = ?',
+      [newPassword, userId]
+    );
+  }
 
+  static async getPasswordById(userId) {
+    const [rows] = await db.query(
+      'SELECT password_hash FROM users WHERE user_id = ?',
+      [userId]
+    );
+    return rows[0]?.password_hash ?? null;
+  }
 }
 
 module.exports = User;

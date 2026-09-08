@@ -5,13 +5,36 @@ import StatCard from "../components/dashboard/StatCard.jsx";
 import RecentPlatforms from "../components/dashboard/RecentPlatforms.jsx";
 import AIContent from "../components/ai/AIContent.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import api from '../services/api';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { plan } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    planCount: 0,
+    savedCount: 0
+  });
+
+
+
+
+  const load = () => {
+    setLoading(true);
+    api.get('/plan/dashboard-data')
+        .then(({ data }) => {
+          console.log('API response:', data);
+          setDashboardData(data.data);
+        })
+        .catch((err) => console.error('Error fetching data:', err))
+        .finally(() => setLoading(false));
+
+      }
+  
 
   useEffect(() => {
+    load();
     function handleKeyDown(event) {
       if (event.key === "Escape") {
         setIsSidebarOpen(false);
@@ -21,6 +44,8 @@ export default function Dashboard() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  
 
   return (
     <div className="min-h-screen bg-[#f4f6fb] text-[#172033]">
@@ -38,21 +63,21 @@ export default function Dashboard() {
           )}
 
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <header className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm font-medium text-[#667085]">Welcome back</p>
                 <h1 className="mt-1 text-3xl font-bold tracking-[-0.04em] text-[#172033] sm:text-4xl">Ready to create your next content?</h1>
                 <span className="mt-3 inline-flex rounded-full bg-[#eeecff] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5146e5]">{plan === "premium" ? "Pro plan active" : "Free plan"}</span>
               </div>
-              <button onClick={() => navigate("/create-content")} className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(79,70,229,0.22)] transition hover:bg-[#4338ca]">
+              <button onClick={() => navigate("/create-content")} className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338ca]">
                 <span className="text-lg leading-none" aria-hidden="true">+</span>
                 Create Content Plan
               </button>
             </header>
 
             <section className="mt-8 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-3" aria-label="Dashboard statistics">
-              <StatCard icon="▣" iconClass="bg-[#eeedff] text-[#4f46e5]" label="Content Plans" value="12" />
-              <StatCard icon="✦" iconClass="bg-[#e7faf4] text-[#12a77d]" label="Saved Ideas" value="8" />
+              <StatCard icon="▣" iconClass="bg-[#eeedff] text-[#4f46e5]" label="Content Plans" value={dashboardData.planCount} />
+              <StatCard icon="✦" iconClass="bg-[#e7faf4] text-[#12a77d]" label="Saved Ideas" value={dashboardData.savedCount} />
               <StatCard icon="↗" iconClass="bg-[#eeedff] text-[#4f46e5]" label="Predictions Used" value="45" />
             </section>
 
