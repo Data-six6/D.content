@@ -4,10 +4,16 @@ require('./config/db');
 const express = require('express');
 const app = express();
 
+const planRoutes = require('./routes/planRoutes');
+const authRoutes = require('./routes/authRoutes');
+const recommendationRoutes = require('./routes/recommendationRoutes');
+
 app.use(express.json());
 
 
-
+app.use('/api/plan', planRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/recommendation', recommendationRoutes);
 
 
 
