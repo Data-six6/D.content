@@ -1,0 +1,66 @@
+import React from "react";
+import { KeyRound, ShieldCheck } from "lucide-react";
+import TwoFactorToggle from "./TwoFactorToggle.jsx";
+
+export default function SecuritySettings({
+  twoFactorEnabled,
+  onToggleTwoFactor,
+  onUpdatePassword,
+}) {
+  return (
+    <section className="rounded-2xl border border-[#e0e3f0] bg-white">
+      <div className="border-b border-[#edf0f6] px-6 py-5">
+        <h2 className="text-base font-extrabold text-[#172033]">Security</h2>
+        <p className="mt-1 text-xs text-[#71809c]">
+          Protect your account and manage sign-in preferences.
+        </p>
+      </div>
+      <div className="divide-y divide-[#edf0f6]">
+        <div className="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#eeecff] text-[#5146e5]">
+              <KeyRound size={17} />
+            </span>
+            <div>
+              <h3 className="text-sm font-bold text-[#334155]">Password</h3>
+              <p className="mt-1 text-xs text-[#71809c]">
+                Last changed 3 months ago
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onUpdatePassword}
+            className="w-fit rounded-xl border border-[#dfe2ee] px-4 py-2.5 text-xs font-bold text-[#5146e5] transition hover:bg-[#f8f9ff]"
+          >
+            Update Password
+          </button>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#e5f8f1] text-[#16a57d]">
+              <ShieldCheck size={17} />
+            </span>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-bold text-[#334155]">
+                  Two-Factor Authentication
+                </h3>
+                <span className="rounded-full bg-[#e5f8f1] px-2 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-[#138a6a]">
+                  Recommended
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-[#71809c]">
+                Add an extra layer of security to your account.
+              </p>
+            </div>
+          </div>
+          <TwoFactorToggle
+            enabled={twoFactorEnabled}
+            onChange={onToggleTwoFactor}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
