@@ -31,21 +31,27 @@ export default function RecentPlatforms() {
       <div className="flex items-center justify-between bg-[#f8f8ff] px-5 py-4"><h2 className="text-base font-bold text-[#172033]">Recent Content Plans</h2><Link to="/my-plans" className="text-xs font-semibold text-[#4f46e5] hover:underline">View All</Link></div>
       <div>
         {recentPlans.map((plan, index) => 
-        <article key={index} className="grid min-w-0 gap-4 border-t border-[#eaebf2] px-5 py-5 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1.5fr)] md:items-center xl:grid-cols-[minmax(120px,1.25fr)_minmax(150px,1.5fr)_minmax(110px,0.8fr)_auto]">
-        <h3 className="flex min-w-0 flex-col text-sm font-bold leading-5 text-[#172033]">{plan.product_name}</h3>
-        <div className="flex min-w-0 flex-wrap gap-1.5">
-        {plan.plan_channel}
-        </div>
-        {/* <div className="min-w-0">
-          <div className="flex justify-between text-[10px] text-[#667085]">
-            <span>Eng. Predict</span>
-        <strong className={plan.engagement === "High" ? "text-[#12a77d]" : "text-[#d08a1e]"}>{plan.engagement}</strong>
-        </div>
-        <div className="mt-2 h-1.5 w-full rounded-full bg-[#ececf5]">
-          <div className={`h-1.5 rounded-full ${plan.color} ${plan.progress}`} />
+        <article key={index} className="grid min-w-0 gap-4 border-t border-[#eaebf2] px-5 py-5  md:items-center xl:grid-cols-[minmax(120px,1.25fr)_minmax(150px,1.5fr)_minmax(110px,0.8fr)_auto]">
+          <div>
+            <h3 className="flex min-w-0 flex-col text-sm font-bold leading-5 text-[#172033]">{plan.product_name}</h3>
+             <p className="text-[#777777]">{plan.product_category}</p>
           </div>
-          </div> */}
-        <time className="text-xs font-medium text-[#667085]">{plan.date}</time>
+        
+        <div className="flex min-w-0 flex-wrap gap-5">
+        {plan.platform_predictions.map((platform) => (
+          <div className="flex justify-center items-center flex-col">
+            <div className="rounded-full bg-[#4F46E51A] border-0 text-center px-2">
+                <div className="text-[16px] font-semibold text-[#444444]">{platform.platform}</div>  
+            </div>
+          
+          <div className="text-sm text-[#555555]" >{platform.prediction}</div>
+          </div>
+        ))}
+        </div>
+        <div>
+
+        </div>
+        <time className="text-xs font-medium text-[#667085]">{(plan.created_at).split('T')[0]}</time>
       </article>)}</div>
     </section>
   );

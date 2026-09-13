@@ -21,7 +21,7 @@ import { FaHourglass } from "react-icons/fa6";
 import { OrbitProgress } from "react-loading-indicators";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaRegCircleCheck } from "react-icons/fa6";
-import { MapPin, Zap, TrendingUp, Clock, Copy, Check } from "lucide-react";
+import { CircleCheck, Lightbulb,Share2, MapPin, Zap, TrendingUp, Clock, Copy, Check } from "lucide-react";
 
 
 
@@ -359,7 +359,7 @@ export default function CreateContent() {
   function StatCard({ icon, label, value }) {
   return (
     <div style={{ background: "#fff", borderRadius: 12, padding: "14px 16px", border: "1px solid #ECEDF3" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#9A9CAF", marginBottom: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, marginBottom: 6 , fontWeight: 600, color: "#555555"}}>
         {icon} {label}
       </div>
       <div style={{ fontSize: 14.5, fontWeight: 700, color: "#161624", lineHeight: 1.3 }}>{value}</div>
@@ -384,7 +384,7 @@ function Card({ children }) {
  
 function CardLabel({ children }) {
   return (
-    <div style={{ fontSize: 15, fontWeight: 700, color: "#161624" }}>{children}</div>
+    <div style={{ fontSize: 20, fontWeight: 700, color: "#161624" }}>{children}</div>
   );
 }
 
@@ -724,7 +724,7 @@ function Badge({ children, color, bg }) {
                       </div>
                     </div>
                   ) : index < currentProcess ? (
-                    <FaCheckCircle color="#12a77d" className="size-6" />
+                    <CircleCheck color="#12a77d" className="size-6" />
                   ) : (
                     <div className="border-2 rounded-full p-1 border-[#bbbbbb]">
                       <FaHourglass color="#bbbbbb" className="size-3" />
@@ -741,8 +741,8 @@ function Badge({ children, color, bg }) {
         return (
           <div className="space-y-5">
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
-              <StatCard icon={<MapPin size={16} color="#6C5CE7" />} label="Recommended Content" value={recommendationData.title} />
-              <StatCard icon={<Zap size={16} color="#00B37E" />} label="Best Platform" value={recommendationData.platform} />
+              <StatCard icon={<Lightbulb size={16} color="#6C5CE7" />} label="Recommended Content" value={recommendationData.title} />
+              <StatCard icon={<Share2 size={16} color="#00B37E" />} label="Best Platform" value={recommendationData.platform} />
               <StatCard icon={<TrendingUp size={16} color="#6C5CE7" />} label="Expected Engagement" value={recommendationData.performance} />
               <StatCard icon={<Clock size={16} color="#8A8CA3" />} label="Best Posting Time" value={recommendationData.time} />
             </div>
@@ -751,8 +751,11 @@ function Badge({ children, color, bg }) {
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
           <Card>
-            <CardLabel>Content Idea Recommendation</CardLabel>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#161624", margin: "6px 0 10px" }}>
+            <div className="border-b border-[#aaaaaa] pb-3">
+              <CardLabel >Content Idea Recommendation</CardLabel>
+            </div>
+            
+            <h2 className="pt-3" style={{ fontSize: 18, fontWeight: 600, color: "#161624", margin: "6px 0 10px"}}>
               {recommendationData.ideas[0]?.idea_name}
             </h2>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -891,7 +894,7 @@ function Badge({ children, color, bg }) {
           )}
 
           <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="overflow-hidden rounded-[28px] border border-[#d9dbea] bg-white shadow-[0_18px_40px_rgba(79,70,229,0.06)]">
+            <div className="overflow-hidden rounded-3xl border border-[#d9dbea] bg-white shadow-[0_18px_40px_rgba(79,70,229,0.06)]">
               <div className="flex flex-col items-center border-[#e8eaf2] px-5 py-5 sm:px-7">
                 <div>
                   <p className="text-[18px] font-bold tracking-[0.0018em] text-[#4f46e5]">Planning</p>

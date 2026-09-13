@@ -103,12 +103,71 @@ class Plan {
     }
 
     static async getRecentPlan(userId) {
-        const [rows] = await db.query(
-            "SELECT * from Plan WHERE user_id = ? ORDER BY created_at DESC LIMIT 2", [userId]
-        );
-        return rows || null;
+    // 1. Fetch flat rows joining Plan -> Recommendation -> Platform
+    const [rows] = await db.query(
+        `SELECT 
+            p.plan_id,
+            p.user_id,
+            p.plan_purpose,
+            p.product_name,
+            p.product_category,
+            p.product_description,
+            p.demographics_age,
+            p.demographics_gender,
+            p.audience_description,
+            p.plan_goal,
+            p.plan_channel,
+            p.created_at,
+            plat.platform_id,
+            plat.platform,
+            plat.prediction
+         FROM Plan p
+         LEFT JOIN Recommendation r ON p.plan_id = r.plan_id
+         LEFT JOIN Platform plat ON r.recommendation_id = plat.recommendation_id
+         WHERE p.user_id = ?
+         ORDER BY p.created_at DESC`,
+        [userId]
+    );
+
+    if (!rows || rows.length === 0) return [];
+
+    // 2. Group flat join rows into structured Plan objects
+    const plansMap = new Map();
+
+    for (const row of rows) {
+        if (!plansMap.has(row.plan_id)) {
+            // Stop once we have grouped the 2 latest distinct plans
+            if (plansMap.size === 2) break;
+
+            plansMap.set(row.plan_id, {
+                plan_id: row.plan_id,
+                user_id: row.user_id,
+                plan_purpose: row.plan_purpose,
+                product_name: row.product_name,
+                product_category: row.product_category,
+                product_description: row.product_description,
+                demographics_age: row.demographics_age,
+                demographics_gender: row.demographics_gender,
+                audience_description: row.audience_description,
+                plan_goal: row.plan_goal,
+                plan_channel: row.plan_channel,
+                created_at: row.created_at,
+                platform_predictions: []
+            });
+        }
+
+        // Push prediction object if a matching row exists in Platform table
+        if (row.platform_id) {
+            plansMap.get(row.plan_id).platform_predictions.push({
+                platform_id: row.platform_id,
+                platform: row.platform,
+                prediction: row.prediction
+            });
+        }
     }
 
+    return Array.from(plansMap.values());
+}
 
 
 }
