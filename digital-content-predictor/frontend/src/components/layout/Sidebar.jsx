@@ -15,7 +15,7 @@ import { useAuth } from "../../context/AuthContext.jsx";
 
 const items = [
   ["Dashboard", LayoutDashboard, "/dashboard"],
-  ["Create Plan", PlusCircle, "/create-plan"],
+  ["Create Plan", PlusCircle, "/create-content"],
   ["History", History, "/my-plans"],
   ["Saved Ideas", Bookmark, "/saved-ideas"],
   ["Pricing", CreditCard, "/pricing"],
@@ -40,21 +40,13 @@ export default function Sidebar({ isOpen = false, onClose }) {
   return (
     <aside
       className={[
-        "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
-        "w-[180px] border-r border-[#ebedf7]",
+        "fixed left-0 top-0 z-50 flex h-screen w-[180px] shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
+        "border-r border-[#ebedf7]",
         isOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:sticky lg:top-[72px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
+        "lg:top-[72px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
       ].join(" ")}
     >
-      <div className="flex items-center justify-between px-3 pb-4 pt-5">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#4f46e5] text-[10px] font-bold text-white shadow-sm">M</div>
-          <div className="min-w-0">
-            <div className="text-[13px] font-extrabold tracking-[-0.04em] text-[#1f2a44]">Meateka</div>
-            <div className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[#7c88a9]">Intelligence Platform</div>
-          </div>
-        </div>
-
+      <div className="flex justify-end px-3 pb-1 pt-5 lg:hidden">
         <button
           type="button"
           aria-label="Close sidebar"
@@ -65,26 +57,35 @@ export default function Sidebar({ isOpen = false, onClose }) {
         </button>
       </div>
 
-      <nav className="mt-2 flex-1 px-2.5" aria-label="Dashboard navigation">
+      <nav
+        className="mt-2 flex-1 px-2.5 lg:mt-5"
+        aria-label="Dashboard navigation"
+      >
         <ul className="space-y-1.5">
           {items.map(([label, Icon, path]) => (
             <li key={label}>
               <NavLink
                 to={path}
                 onClick={onClose}
-                className={({ isActive }) => [
-                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
-                  isActive
-                    ? "bg-white text-[#3d42d9] shadow-[0_1px_0_rgba(15,23,42,0.02)]"
-                    : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
-                ].join(" ")}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
+                    isActive
+                      ? "bg-white text-[#3d42d9] shadow-[0_1px_0_rgba(15,23,42,0.02)]"
+                      : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
+                  ].join(" ")
+                }
               >
                 {({ isActive }) => (
                   <>
                     <Icon
                       size={15}
                       strokeWidth={1.5}
-                      className={isActive ? "shrink-0 text-[#3d42d9]" : "shrink-0 text-[#4b5565]"}
+                      className={
+                        isActive
+                          ? "shrink-0 text-[#3d42d9]"
+                          : "shrink-0 text-[#4b5565]"
+                      }
                     />
                     <span className="truncate">{label}</span>
                   </>
@@ -103,17 +104,25 @@ export default function Sidebar({ isOpen = false, onClose }) {
                 key={label}
                 to={path}
                 onClick={onClose}
-                className={({ isActive }) => [
-                  "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
-                  isActive ? "bg-white text-[#1f2a44]" : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
-                ].join(" ")}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-2 rounded-md px-2.5 py-2 text-[11px] font-medium transition-colors duration-150",
+                    isActive
+                      ? "bg-white text-[#1f2a44]"
+                      : "text-[#4b5565] hover:bg-white/70 hover:text-[#1f2a44]",
+                  ].join(" ")
+                }
               >
                 <Icon size={15} strokeWidth={1.5} className="shrink-0" />
                 <span className="truncate">{label}</span>
               </NavLink>
             ))}
           </div>
-          <button type="button" onClick={handleLogout} className="mt-1.5 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium text-[#4b5565] transition-colors duration-150 hover:bg-white/70 hover:text-[#1f2a44]">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="mt-1.5 flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-[11px] font-medium text-[#4b5565] transition-colors duration-150 hover:bg-white/70 hover:text-[#1f2a44]"
+          >
             <LogOut size={15} strokeWidth={1.5} className="shrink-0" />
             <span className="truncate">Log out</span>
           </button>

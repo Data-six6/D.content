@@ -1,22 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
-import api from "../services/api.js";
+import api from "../services/api";
 
-const STORAGE_KEY = "meateka_user";
-const PLAN_STORAGE_KEY = "meateka_subscription";
-const TOKEN_STORAGE_KEY = "meateka_token";
-const DEMO_CREDENTIALS = {
-  email: "demo@meateka.com",
-  password: "Demo123!",
-};
+const TOKEN_KEY = "sl_token";
+const USER_KEY = "sl_user";
+const PLAN_STORAGE_KEY = "sl_plan";
 
 const demoUser = {
   name: "Demo User",
-  firstName: "Demo",
-  lastName: "User",
-  email: DEMO_CREDENTIALS.email,
-  bio: "Digital creator focusing on tech and productivity.",
-  avatar: "",
-  twoFactorEnabled: false,
+  email: "demo@meateka.com",
   role: "Creator",
   plan: "free",
   workspace: { name: "My Workspace", createdAt: "" },
@@ -26,7 +17,7 @@ const AuthContext = createContext(null);
 
 function readStoredUser() {
   try {
-    const storedUser = localStorage.getItem(STORAGE_KEY);
+    const storedUser = localStorage.getItem(USER_KEY);
     return storedUser ? JSON.parse(storedUser) : null;
   } catch {
     return null;
@@ -46,111 +37,76 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(readStoredUser);
   const [plan, setPlanState] = useState(readStoredPlan);
 
-  function saveUser(nextUser, token) {
-    const hydratedUser = {
-      ...demoUser,
-      ...nextUser,
-      plan: nextUser?.plan || readStoredPlan(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(hydratedUser));
-    if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
-    localStorage.setItem(PLAN_STORAGE_KEY, hydratedUser.plan === "premium" ? "premium" : "free");
-    setUser(hydratedUser);
-    setPlanState(hydratedUser.plan === "premium" ? "premium" : "free");
+  function saveSession(token, nextUser) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
+    setUser(nextUser);
   }
 
-  function setPlan(nextPlan) {
-    const normalizedPlan = nextPlan === "premium" ? "premium" : "free";
-    localStorage.setItem(PLAN_STORAGE_KEY, normalizedPlan);
-    setPlanState(normalizedPlan);
-    setUser((currentUser) => {
-      const updatedUser = currentUser ? { ...currentUser, plan: normalizedPlan } : { ...demoUser, plan: normalizedPlan };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-      return updatedUser;
-    });
-  }
-
-  function updateProfile(profile) {
-    setUser((currentUser) => {
-      if (!currentUser) return currentUser;
-      const storedUser = readStoredUser() || currentUser;
-      const updatedUser = {
-        ...storedUser,
-        ...profile,
-        name: `${profile.firstName || storedUser.firstName} ${profile.lastName || storedUser.lastName}`.trim(),
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-      return updatedUser;
-    });
-  }
-
-  function updateSecurity(settings) {
-    setUser((currentUser) => {
-      if (!currentUser) return currentUser;
-      const updatedUser = { ...(readStoredUser() || currentUser), ...settings };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-      return updatedUser;
-    });
-  }
-
-  function signIn(email, password) {
-    if (email.trim().toLowerCase() !== DEMO_CREDENTIALS.email || password !== DEMO_CREDENTIALS.password) {
-      return false;
+  async function signIn(email, password) {
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password_hash: password,
+      });
+      saveSession(data.token, data.user);
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.error || "Invalid email or password.";
+      return { success: false, error: message };
     }
+  }
 
-    saveUser({ ...demoUser, plan: readStoredPlan() });
-    return true;
+  async function signUp(email, password, firstName, lastName) {
+    try {
+      const { data } = await api.post("/auth/register", {
+        email,
+        password_hash: password,
+        first_name: firstName,
+        last_name: lastName,
+      });
+      saveSession(data.token, data.user);
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.error || "Failed to create account.";
+      return { success: false, error: message };
+    }
   }
 
   function signInDemo() {
-    saveUser({ ...demoUser, plan: readStoredPlan() });
-  }
-
-  async function signInWithGoogle(credential) {
-    const response = await api.post("/auth/google", {
-      credential,
-    });
-    const nextUser = {
-      ...response.user,
-      name: `${response.user.firstName} ${response.user.lastName}`.trim(),
-    };
-    saveUser(nextUser, response.token);
-    return nextUser;
-  }
-
-  function register(fullName, email, password) {
-    const normalizedEmail = email.trim().toLowerCase();
-    const existingUser = readStoredUser();
-    if (existingUser?.email?.toLowerCase() === normalizedEmail || normalizedEmail === DEMO_CREDENTIALS.email) {
-      return { success: false, error: "An account with this email already exists." };
-    }
-
-    const nameParts = fullName.trim().split(/\s+/);
-    const newUser = {
-      ...demoUser,
-      name: fullName.trim(),
-      firstName: nameParts[0],
-      lastName: nameParts.slice(1).join(" ") || "Creator",
-      email: normalizedEmail,
-      bio: "Digital creator focusing on tech and productivity.",
-      avatar: "",
-      twoFactorEnabled: false,
-      plan: "free",
-      workspace: { name: `${nameParts[0]}'s Workspace`, createdAt: new Date().toISOString() },
-    };
-    saveUser(newUser);
-    return { success: true };
+    // Demo mode is a local-only stand-in and does not hit the API or
+    // carry a real JWT. Protected API calls will not succeed while in
+    // this mode; it's meant for UI walkthroughs only.
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
+    setUser(demoUser);
   }
 
   function signOut() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     setUser(null);
     setPlanState(readStoredPlan());
   }
 
+  async function signInWithGoogle(_credential) {
+    // Google sign-in requires a backend endpoint to verify the credential.
+    // For now, fall back to demo mode so the UI remains walkthrough-capable.
+    signInDemo();
+  }
+
+  function updateProfile(_updates) {
+    // Profile updates would be persisted via API in a full implementation.
+    // This is a no-op stub so the profile form does not crash.
+  }
+
+  function updateSecurity(_updates) {
+    // Security updates would be persisted via API in a full implementation.
+    // This is a no-op stub so the security form does not crash.
+  }
+
   return (
-    <AuthContext.Provider value={{ user, plan, isAuthenticated: Boolean(user), signIn, signInDemo, signInWithGoogle, register, signOut, setPlan, updateProfile, updateSecurity }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), signIn, signUp, signInDemo, signOut, signInWithGoogle, updateProfile, updateSecurity }}>
       {children}
     </AuthContext.Provider>
   );
