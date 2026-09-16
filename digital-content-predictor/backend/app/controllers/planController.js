@@ -212,4 +212,19 @@ exports.viewInterest = async (req, res) => {
 };
 
 
+exports.deleteSaved = async (req,res) => {
+    try {
+        const { userId } = req.user;
+         const savedId = req.params.planId;
 
+        const saved = await Plan.deleteSaved(userId, savedId);
+        console.log(`deleting ${saved}`);
+        return res.status(200).json({saved})
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({
+            error: 'Failed to delete'  
+        });
+    }
+}

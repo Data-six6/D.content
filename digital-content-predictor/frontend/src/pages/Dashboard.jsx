@@ -48,11 +48,11 @@ export default function Dashboard() {
   
 
   return (
-    <div className="min-h-screen bg-[#f4f6fb] text-[#172033]">
-      <div className="flex min-h-screen overflow-hidden">
+    <div className="min-h-screen bg-[#ffffff] text-[#172033]">
+      <div className="flex min-h-screen ">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <main className="relative min-w-0 flex-1 bg-[#f7f9fd]">
+        <main className="relative min-w-0 flex-1 bg-[#ffffff]">
           {isSidebarOpen && (
             <button
               type="button"

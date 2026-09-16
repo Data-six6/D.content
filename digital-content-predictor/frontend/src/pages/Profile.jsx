@@ -6,5 +6,5 @@ import { useAuth } from "../context/AuthContext.jsx";
 export default function Profile() {
   const { user, updateProfile, updateSecurity } = useAuth();
 
-  return <PageShell title="Settings" description="Manage your account preferences and security."><ProfileSettings user={user} onProfileSave={updateProfile} onSecuritySave={updateSecurity} /></PageShell>;
+  return <PageShell title="" description=""><ProfileSettings user={user} onProfileSave={updateProfile} onSecuritySave={updateSecurity} /></PageShell>;
 }

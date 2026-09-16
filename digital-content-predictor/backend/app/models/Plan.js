@@ -62,12 +62,84 @@ class Plan {
     }
 
     static async getPlanByUser(userId) {
-        const [rows] = await db.query(
-            "SELECT * FROM Plan WHERE user_id = ?",
-            [userId]
-        );
-        return rows || null;
-    }
+    // 1. Fetch all plans for the user, ordered by creation date
+    const [plans] = await db.query(
+        `SELECT * FROM Plan WHERE user_id = ? ORDER BY created_at DESC`,
+        [userId]
+    );
+
+    if (!plans || plans.length === 0) return [];
+
+    const planIds = plans.map(p => p.plan_id);
+
+    // 2. Fetch all related Recommendations, Captions, Platforms, Ideas, and Alternates for these plans in parallel
+    const [
+        [recommendations],
+        [captions],
+        [platforms],
+        [ideas],
+        [alternates]
+    ] = await Promise.all([
+        db.query(
+            `SELECT * FROM Recommendation WHERE plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT c.* FROM Caption c 
+             JOIN Recommendation r ON c.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT pl.* FROM Platform pl 
+             JOIN Recommendation r ON pl.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT i.* FROM Idea i 
+             JOIN Recommendation r ON i.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT a.* FROM alternate a 
+             JOIN Idea i ON a.idea_id = i.idea_id 
+             JOIN Recommendation r ON i.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        )
+    ]);
+
+    // 3. Nest data hierarchically back into each plan
+    return plans.map(plan => {
+        // Find recommendations belonging to this plan (can be multiple or single)
+        const planRecs = recommendations.filter(r => r.plan_id === plan.plan_id);
+
+        const formattedRecs = planRecs.map(rec => {
+            const recId = rec.recommendation_id;
+
+            const recIdeas = ideas
+                .filter(i => i.recommendation_id === recId)
+                .map(idea => ({
+                    ...idea,
+                    alternates: alternates.filter(alt => alt.idea_id === idea.idea_id)
+                }));
+
+            return {
+                ...rec,
+                captions: captions.filter(c => c.recommendation_id === recId),
+                platform_predictions: platforms.filter(p => p.recommendation_id === recId),
+                ideas: recIdeas
+            };
+        });
+
+        return {
+            ...plan,
+            recommendations: formattedRecs // or nest a single 'recommendation' if a plan only has 1
+        };
+    });
+}
 
     static async createSavedPlan(data) {
         const [result] = await db.query(
@@ -78,13 +150,82 @@ class Plan {
     }
 
     static async viewSavedPlan(userId) {
-        const [rows] = await db.query(
-            `SELECT p.*, s.saved_plan_id, s.created_at
-             FROM SavedPlan s
-             JOIN Plan p ON s.plan_id = p.plan_id
-             WHERE s.user_id = ?`,
-            [userId]
-        );
+    const [plans] = await db.query(
+        `SELECT p.*, s.* FROM SavedPlan s JOIN Plan p ON s.plan_id = p.plan_id WHERE s.user_id = ? ORDER BY s.created_at DESC`,
+        [userId]
+    );
+
+    if (!plans || plans.length === 0) return [];
+
+    const planIds = plans.map(p => p.plan_id);
+
+    // 2. Fetch all related Recommendations, Captions, Platforms, Ideas, and Alternates for these plans in parallel
+    const [
+        [recommendations],
+        [captions],
+        [platforms],
+        [ideas],
+        [alternates]
+    ] = await Promise.all([
+        db.query(
+            `SELECT * FROM Recommendation WHERE plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT c.* FROM Caption c 
+             JOIN Recommendation r ON c.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT pl.* FROM Platform pl 
+             JOIN Recommendation r ON pl.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT i.* FROM Idea i 
+             JOIN Recommendation r ON i.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        ),
+        db.query(
+            `SELECT a.* FROM alternate a 
+             JOIN Idea i ON a.idea_id = i.idea_id 
+             JOIN Recommendation r ON i.recommendation_id = r.recommendation_id 
+             WHERE r.plan_id IN (?)`,
+            [planIds]
+        )
+    ]);
+
+    // 3. Nest data hierarchically back into each plan
+    return plans.map(plan => {
+        // Find recommendations belonging to this plan (can be multiple or single)
+        const planRecs = recommendations.filter(r => r.plan_id === plan.plan_id);
+
+        const formattedRecs = planRecs.map(rec => {
+            const recId = rec.recommendation_id;
+
+            const recIdeas = ideas
+                .filter(i => i.recommendation_id === recId)
+                .map(idea => ({
+                    ...idea,
+                    alternates: alternates.filter(alt => alt.idea_id === idea.idea_id)
+                }));
+
+            return {
+                ...rec,
+                captions: captions.filter(c => c.recommendation_id === recId),
+                platform_predictions: platforms.filter(p => p.recommendation_id === recId),
+                ideas: recIdeas
+            };
+        });
+
+        return {
+            ...plan,
+            recommendations: formattedRecs // or nest a single 'recommendation' if a plan only has 1
+        };
+    });
         return rows;
     }
 
@@ -168,6 +309,17 @@ class Plan {
 
     return Array.from(plansMap.values());
 }
+
+    static async deleteSaved(userId, savedId) {
+       
+
+        const [result] = await db.query(
+            `DELETE FROM SavedPlan WHERE user_id = ? AND plan_id = ?`, [userId, savedId]
+        );
+
+        return result[0];
+
+    }
 
 
 }

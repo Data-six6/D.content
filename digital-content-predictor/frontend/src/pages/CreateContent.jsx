@@ -348,7 +348,7 @@ export default function CreateContent() {
       audience: inputData.age || 'General audience',
       strategy: inputData.goal || 'Audience-first storytelling',
       channels: inputData.channel ? [inputData.channel] : ['Instagram'],
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toLocaleDateString(),
     };
 
     const savedPlans = getSavedPlans();
