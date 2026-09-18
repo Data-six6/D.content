@@ -133,6 +133,30 @@ def api_predict_content_plan(request: ContentPlanRequest):
         raise HTTPException(status_code=500, detail=f"Content plan prediction error: {str(e)}")
 
 
+@app.post("/api/recommendation", tags=["Recommendation"])
+@app.post("/api/recommendations", tags=["Recommendation"])
+def api_recommendation(request: ContentPlanRequest):
+    """Master backend endpoint returning the exact composite Recommendation schema."""
+    try:
+        raw_dict = request.model_dump(exclude_unset=False)
+        from ml.recommendations.recommendation_service import generate_recommendation
+        return generate_recommendation(raw_dict)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Recommendation error: {str(e)}")
+
+
+@app.post("/api/ml-plan", tags=["ML Unified Plan"])
+@app.post("/api/predict-ml-plan", tags=["ML Unified Plan"])
+def api_predict_ml_plan(request: ContentPlanRequest):
+    """Clean ML wrapper endpoint combining engagement prediction, platform comparison, and best posting time."""
+    try:
+        raw_dict = request.model_dump(exclude_unset=False)
+        from ml.prediction.predictor import predict_ml_plan
+        return predict_ml_plan(raw_dict)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ML plan prediction error: {str(e)}")
+
+
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "=" * 60)

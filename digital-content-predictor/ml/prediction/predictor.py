@@ -349,3 +349,96 @@ def predict_content_plan(input_data: Dict[str, Any]) -> Dict[str, Any]:
         "comparison_summary": comp_res.get("summary_insight", ""),
         "best_posting_time": best_posting_time,
     }
+
+
+def predict_ml_plan(input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Clean unified wrapper combining the 3 core validated ML capabilities:
+    1. Engagement Prediction (performance)
+    2. Platform Comparison (platform & platform_predictions)
+    3. Best Posting Time Recommendation (time)
+
+    Calls ONLY existing ML components:
+    - EngagementPredictor -> performance
+    - PlatformComparator -> platform & platform_predictions
+    - PostingTimeRecommender -> time
+
+    Does NOT use, import, or call any AI content-generation or NLP modules.
+
+    Args:
+        input_data (Dict[str, Any]): Dictionary containing pre-posting features:
+            - Platform (str, optional): 'TikTok', 'Instagram', 'Facebook'
+            - Content_Type (str, optional): 'Video', 'Photo', 'Carousel', etc.
+            - Category (str, optional): 'Food', 'Fashion', 'Business', etc.
+            - Day_of_Week (str, optional): 'Friday', 'Wednesday', etc.
+            - Sentiment (str, optional): 'Positive', 'Neutral', 'Negative'
+            - Influencer_Tier (str, optional): 'Nano', 'Micro', 'Mid-tier', 'Macro'
+            - Hour_of_Day (int, optional): 0-23
+            - Month (int, optional): 1-12 (or derived from planned_posting_date)
+            - Hashtag_Count (int, optional): e.g. 4
+            - Content_Length (int, optional): e.g. 120 (or derived from len(caption))
+            - Follower_Count (int, optional): e.g. 35000
+            - Has_Media (bool, optional): True or False
+            - Is_Verified (bool, optional): True or False
+            - planned_posting_date (str, optional): 'YYYY-MM-DD'
+            - caption (str, optional): optional caption text used only for character length
+
+    Returns:
+        Dict[str, Any]:
+        {
+          "performance": "...",
+          "platform": "...",
+          "time": "...",
+          "platform_predictions": [
+            {"platform": "TikTok", "prediction": "..."},
+            {"platform": "Instagram", "prediction": "..."},
+            {"platform": "Facebook", "prediction": "..."}
+          ]
+        }
+    """
+    predictor, comparator, recommender = get_ml_suite()
+    raw = copy.deepcopy(input_data)
+
+    # 1. Derive Month from planned_posting_date if provided
+    if "planned_posting_date" in raw and ("Month" not in raw or raw["Month"] is None):
+        raw["Month"] = parse_date_to_month(raw["planned_posting_date"])
+
+    # 2. Derive Content_Length from caption text if provided
+    if "caption" in raw and ("Content_Length" not in raw or raw["Content_Length"] is None):
+        caption_text = str(raw.get("caption") or "").strip()
+        raw["Content_Length"] = len(caption_text)
+
+    # 3. Sanitize base post features using existing pre-posting validation
+    base_post = predictor._validate_and_sanitize_input(raw)
+
+    # 4. Multi-Platform Comparison across TikTok, Instagram, Facebook -> platform & platform_predictions
+    platforms_order = ["TikTok", "Instagram", "Facebook"]
+    comp_res = comparator.compare(base_post, platforms=platforms_order)
+    best_platform = comp_res.get("best_platform", "TikTok")
+
+    platform_predictions = [
+        {
+            "platform": p,
+            "prediction": comp_res["platform_predictions"][p]["predicted_engagement"],
+        }
+        for p in platforms_order
+    ]
+
+    # 5. ML Engagement Prediction for the winning platform -> performance
+    winning_format = comp_res["platform_predictions"][best_platform]["adapted_content_type"]
+    winning_post = copy.deepcopy(base_post)
+    winning_post["Platform"] = best_platform
+    winning_post["Content_Type"] = winning_format
+    pred_res = predictor.predict(winning_post)
+    performance = pred_res["predicted_engagement"]
+
+    # 6. ML Posting Time Recommendation -> time
+    time_res = recommender.get_best_posting_times(winning_post)
+    recommended_time = time_res.get("recommended_peak_hour", "12:00 - 12:59")
+
+    # 7. Return ONLY ML results with exact target schema
+    return {
+        "performance": performance,
+        "platform": best_platform,
+        "time": recommended_time,
+        "platform_predictions": platform_predictions,
+    }
