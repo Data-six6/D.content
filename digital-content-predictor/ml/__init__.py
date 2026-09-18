@@ -7,11 +7,17 @@ from ml.config import (
     PLATFORM_CONTENT_TYPES,
 )
 
-from ml.prediction.predictor import predict_content_plan, predict_ml_plan, EngagementPredictor
+from ml.prediction.predictor import (
+    predict_content_plan,
+    predict_ml_plan,
+    prepare_ml_input,
+    EngagementPredictor,
+)
 from ml.recommendations.recommendation_service import generate_recommendation
 
 __version__ = "1.0.0"
 __all__ = [
+    "prepare_ml_input",
     "predict_ml_plan",
     "predict_content_plan",
     "generate_recommendation",

@@ -1,6 +1,6 @@
 """Pydantic schemas for Meateka ML Prediction API."""
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -102,3 +102,18 @@ class ContentPlanRequest(BaseModel):
     planned_posting_date: Optional[str] = Field(default=None, description="Optional ISO date (YYYY-MM-DD)", example="2026-09-20")
     caption: Optional[str] = Field(default=None, description="Optional caption text", example="Delicious street food in Phnom Penh! #foodie")
     platforms: Optional[List[str]] = Field(default=None, description="Optional list of platforms to evaluate simultaneously", example=["Facebook", "Instagram", "TikTok"])
+
+    # Frontend form fields
+    plan_purpose: Optional[str] = None
+    product_name: Optional[str] = None
+    product_category: Optional[str] = None
+    product_description: Optional[str] = None
+    demographics_age: Optional[str] = None
+    demographics_gender: Optional[str] = None
+    interests: Optional[Union[List[str], str]] = None
+    audience_description: Optional[str] = None
+    plan_goal: Optional[str] = None
+    plan_channel: Optional[str] = None
+    followers: Optional[int] = None
+
+    model_config = {"extra": "allow"}
