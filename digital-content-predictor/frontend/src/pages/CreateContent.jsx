@@ -573,7 +573,7 @@ function Badge({ children, color, bg }) {
           return (
             <div className="space-y-5">
               <div className="flex flex-col items-center justify-center text-center">
-                <h2 className="mt-2 font-semibold tracking-[-0.04em] text-[#222222] sm:text-[36px]">
+                <h2 className="mt-2 font-bold tracking-[-0.04em] text-[#222222] sm:text-[36px]">
                   Import Your Content
                 </h2>
                 <p className="mt-1.5 max-w-xl text-[16px] leading-5 text-[#667085]">
@@ -588,7 +588,7 @@ function Badge({ children, color, bg }) {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEEDFF]">
                       <Link2 className="size-5 text-[#4f46e5]" />
                     </div>
-                    <h3 className="text-[16px] font-semibold text-[#222222]">Paste URL</h3>
+                    <h3 className="text-[16px] font-bold text-[#222222]">Paste URL</h3>
                   </div>
 
                   <div className="mt-5">
@@ -634,7 +634,7 @@ function Badge({ children, color, bg }) {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEEDFF]">
                       <UploadCloud className="size-5 text-[#4f46e5]" />
                     </div>
-                    <h3 className="text-[16px] font-semibold text-[#222222]">Upload File</h3>
+                    <h3 className="text-[16px] font-bold text-[#222222]">Upload File</h3>
                   </div>
 
                   <label
@@ -646,7 +646,7 @@ function Badge({ children, color, bg }) {
                     <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm">
                       <UploadCloud className="size-5 text-[#8A8CA3]" />
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-[#222222]">Click to upload or drag and drop</p>
+                    <p className="mt-3 text-sm font-bold text-[#222222]">Click to upload or drag and drop</p>
                     <p className="mt-1 text-xs text-[#9A9CAF]">MP4, MOV, JPG, or PNG (max. 500MB)</p>
                     <input
                       id="existing-content-upload"
@@ -663,7 +663,7 @@ function Badge({ children, color, bg }) {
               {/* Content to Analyze */}
               <div className="mt-6 rounded-2xl border-2 border-[#e8eaf2] bg-white">
                 <div className="flex items-center justify-between border-b border-[#ECEDF3] px-6 py-4">
-                  <h3 className="text-[16px] font-semibold text-[#222222]">Content to Analyze</h3>
+                  <h3 className="text-[16px] font-bold text-[#222222]">Content to Analyze</h3>
                   <span className="rounded-full bg-[#EEEDFF] px-3 py-1 text-[12px] font-semibold text-[#4f46e5]">
                     {contentItems.length} {contentItems.length === 1 ? 'item' : 'items'}
                   </span>
@@ -967,14 +967,32 @@ function Badge({ children, color, bg }) {
             </div>
           </div>
         );
-      case 'review':
+      case 'review': {
+        if (!recommendationData) {
+          return (
+            <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
+              <OrbitProgress color="#4f46e5" size="small" />
+              <p className="text-[15px] font-semibold text-[#667085]">
+                We couldn't load your recommendation yet.
+              </p>
+              <p className="max-w-sm text-[13px] text-[#9A9CAF]">
+                Hang tight while we finish generating it, or go back and try again if this doesn't update in a moment.
+              </p>
+            </div>
+          );
+        }
+
+        const primaryIdea = recommendationData.ideas?.[0];
+        const alternates = primaryIdea?.alternates || [];
+        const platformPredictions = recommendationData.platform_predictions || [];
+
         return (
           <div className="space-y-5">
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 20 }}>
-              <StatCard icon={<Lightbulb size={16} color="#6C5CE7" />} label="Recommended Content" value={recommendationData.title} />
-              <StatCard icon={<Share2 size={16} color="#00B37E" />} label="Best Platform" value={recommendationData.platform} />
-              <StatCard icon={<TrendingUp size={16} color="#6C5CE7" />} label="Expected Engagement" value={recommendationData.performance} />
-              <StatCard icon={<Clock size={16} color="#8A8CA3" />} label="Best Posting Time" value={recommendationData.time} />
+              <StatCard icon={<Lightbulb size={16} color="#6C5CE7" />} label="Recommended Content" value={recommendationData.title || '—'} />
+              <StatCard icon={<Share2 size={16} color="#00B37E" />} label="Best Platform" value={recommendationData.platform || '—'} />
+              <StatCard icon={<TrendingUp size={16} color="#6C5CE7" />} label="Expected Engagement" value={recommendationData.performance || '—'} />
+              <StatCard icon={<Clock size={16} color="#8A8CA3" />} label="Best Posting Time" value={recommendationData.time || '—'} />
             </div>
 
 
@@ -986,38 +1004,48 @@ function Badge({ children, color, bg }) {
             </div>
             
             <h2 className="pt-3" style={{ fontSize: 18, fontWeight: 600, color: "#161624", margin: "6px 0 10px"}}>
-              {recommendationData.ideas[0]?.idea_name}
+              {primaryIdea?.idea_name || 'No idea generated yet'}
             </h2>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-              <Badge color="#6C5CE7" bg="#F0EDFE">{recommendationData.ideas[0]?.content_type}</Badge>
+              {primaryIdea?.content_type && (
+                <Badge color="#6C5CE7" bg="#F0EDFE">{primaryIdea.content_type}</Badge>
+              )}
             </div>
             <div style={{ marginBottom: 20 }}>
               <div style={{ fontSize: 13, color: "#8A8CA3", fontWeight: 600, marginBottom: 8 }}>
                 Alternative Ideas:
               </div>
-              {recommendationData.ideas[0]?.alternates.map((alt) => (
-                <div key={alt.alternate_id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#4A4C5E", marginBottom: 6 }}>
-                  <span style={{ color: "#6C5CE7" }}>▸</span> {alt.idea_name}
-                </div>
-              ))}
+              {alternates.length > 0 ? (
+                alternates.map((alt) => (
+                  <div key={alt.alternate_id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#4A4C5E", marginBottom: 6 }}>
+                    <span style={{ color: "#6C5CE7" }}>▸</span> {alt.idea_name}
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: 13, color: "#9A9CAF" }}>No alternative ideas available.</div>
+              )}
             </div>
           </Card>
  
           <Card>
             <CardLabel>Engagement Prediction</CardLabel>
             <div style={{ marginTop: 14 }}>
-              {recommendationData.platform_predictions.map((prediction) => {
-                const score = parseInt(prediction.prediction, 10) || 0;
-                const color = score >= 85 ? "#12A77D" : score >= 70 ? "#C2185B" : "#8A8CA3";
-                const note =
-                  score >= 85 ? "High Potential" : score >= 70 ? "Medium Potential" : "Low Potential";
-                return (
-                  <div key={prediction.platform_id}>
-                    <div style={{ height: 18 }} />
-                    <EngagementBar platform={prediction.platform} score={score} color={color} note={note} />
-                  </div>
-                );
-              })}
+              {platformPredictions.length > 0 ? (
+                platformPredictions.map((prediction) => {
+                  const score = parseInt(prediction.prediction, 10) || 0;
+                  const color = score >= 85 ? "#12A77D" : score >= 70 ? "#C2185B" : "#8A8CA3";
+                  const note =
+                    score >= 85 ? "High Potential" : score >= 70 ? "Medium Potential" : "Low Potential";
+                  return (
+                    <div key={prediction.platform_id}>
+                      <div style={{ height: 18 }} />
+                      <EngagementBar platform={prediction.platform} score={score} color={color} note={note} />
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ fontSize: 13, color: "#9A9CAF" }}>No engagement predictions available.</div>
+              )}
             </div>
             <p style={{ fontSize: 12.5, color: "#9A9CAF", marginTop: 18, lineHeight: 1.5 }}>
               TikTok's algorithm favors this hook format for your niche right now,
@@ -1033,7 +1061,7 @@ function Badge({ children, color, bg }) {
                 <Card>
             <CardLabel>Caption &amp; Hashtags</CardLabel>
             <div style={{ display: "flex", gap: 18, borderBottom: "1px solid #ECEDF3", marginTop: 12, marginBottom: 14 }}>
-              {recommendationData.captions.map((tab) => (
+              {(recommendationData.captions || []).map((tab) => (
                 <button
                   key={tab.caption_id}
                   onClick={() => setActiveTab(tab.platform)}
@@ -1092,6 +1120,7 @@ function Badge({ children, color, bg }) {
 
           </div>
         );
+      }
       default:
         return null;
     }

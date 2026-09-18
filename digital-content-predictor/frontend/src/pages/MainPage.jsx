@@ -23,6 +23,14 @@ import {
 } from "lucide-react";
 import landing from "../assets/landing.webp";
 import logo from "../assets/meateaka.png";
+import meeting from "../assets/meeting.jpg";
+import lundy from "../assets/lundy.jpg";
+import menghong from "../assets/menghong.jpg";
+import namkea from "../assets/namkea.jpg";
+import nika from "../assets/nika.jpg";
+import sakal from "../assets/sakal.jpg";
+import sokeng from "../assets/sokeng.jpg";
+import thymon from "../assets/thymon.jpg";
 
 const featureCards = [
   {
@@ -130,6 +138,18 @@ function IdeasPreview() {
 function MainPage() {
   const [billing, setBilling] = useState("monthly");
   const [openFaq, setOpenFaq] = useState(0);
+  const teamMembers = [
+  
+  { name: "Leng Sokeng", role: "Project Lead", image: sokeng },
+  { name: "Chean Channika", role: "Product Manager", image: nika },
+  { name: "Thai Chansothymon", role: "Web Developer", image: thymon },
+  { name: "Seng Namkea", role: "Web Developer", image: namkea },
+  { name: "Samolty Lundy", role: "Data Scientist", image: lundy },
+  { name: "Por Menghong", role: "ML Engineer", image: menghong },
+  { name: "Ly Vanda", role: "ML Engineer", image: sakal },
+  { name: "Suon Vannsakal", role: "DevOps Engineer", image: sakal },
+  
+];
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#fbfaff] text-[#20233d]">
@@ -370,36 +390,30 @@ function MainPage() {
             <div className="mt-12 grid gap-5 lg:grid-cols-3">
               {[
                 {
-                  name: "BASIC",
-                  price: "Free",
-                  action: "Current Plan",
+                  name: "MONTHLY",
+                  price: "$12.99/month",
+                  action: "Monthly Plan",
                   items: [
-                    "10 Content Analyses / mo",
-                    "2 Platforms Supported",
-                    "Basic AI Suggestions",
+                    "7 days free trial, then billed every month as $12.99"
+                    
                   ],
                 },
                 {
-                  name: "PRO",
-                  price: billing === "annual" ? "$23/mo" : "$29/mo",
-                  action: "Upgrade to Pro",
+                  name: "BI-ANNUALY",
+                  price: "$11.99/month",
+                  action: "Bi-annualy Plan",
                   popular: true,
                   items: [
-                    "Unlimited Content Analyses",
-                    "All Platforms Supported",
-                    "Deep AI Insights & Trends",
-                    "Priority Support",
+                    "7 days free trial, then billed every month as $11.99"
+                  
                   ],
                 },
                 {
-                  name: "ENTERPRISE",
-                  price: billing === "annual" ? "$79/mo" : "$99/mo",
-                  action: "Contact Sales",
+                  name: "ANNUALY",
+                  price: "$9.99/month",
+                  action: "Annualy Plan",
                   items: [
-                    "Everything in Pro",
-                    "Custom Integrations",
-                    "Dedicated Account Manager",
-                    "SLA Guarantees",
+                    "7 days free trial, then billed every month as $11.99"
                   ],
                 },
               ].map((plan) => (
@@ -418,12 +432,7 @@ function MainPage() {
                     {plan.name}
                   </p>
                   <p className="mt-5 text-4xl font-bold">{plan.price}</p>
-                  <button
-                    type="button"
-                    className={`mt-7 w-full rounded-xl px-4 py-3 text-sm font-bold ${plan.popular ? "bg-white text-[#6d5ce7]" : "border border-[#dcdbea] text-[#36374f]"}`}
-                  >
-                    {plan.action}
-                  </button>
+                  
                   <div
                     className={`my-7 h-px ${plan.popular ? "bg-white/20" : "bg-[#eeeef5]"}`}
                   />
@@ -500,7 +509,7 @@ function MainPage() {
             <div className="mt-16 grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
               <div className="overflow-hidden rounded-3xl border border-[#e3e0f0] bg-[#f1efff] shadow-[0_16px_40px_rgba(47,42,99,0.08)]">
                 <img
-                  src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85"
+                  src={meeting}
                   alt="Creative team collaborating around a table"
                   className="h-[320px] w-full object-cover sm:h-[390px]"
                 />
@@ -584,31 +593,10 @@ function MainPage() {
                 </p>
               </div>
               <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-4 md:gap-6">
-                {[
-                  [
-                    "Alex Rivera",
-                    "CEO & Founder",
-                    "photo-1500648767791-00dcc994a43e",
-                  ],
-                  [
-                    "Jordan Chen",
-                    "Head of Product",
-                    "photo-1494790108377-be9c29b29330",
-                  ],
-                  [
-                    "Sam Taylor",
-                    "AI & Data Lead",
-                    "photo-1507003211169-0a1dd7228f2d",
-                  ],
-                  [
-                    "Casey Patel",
-                    "Creative Director",
-                    "photo-1534528741775-53994a69daeb",
-                  ],
-                ].map(([name, role, image]) => (
+                {teamMembers.map(({ name, role, image }) => (
                   <article key={name} className="text-center">
                     <img
-                      src={`https://images.unsplash.com/${image}?auto=format&fit=crop&w=300&q=80`}
+                      src={image}
                       alt={`${name}, ${role}`}
                       className="mx-auto h-24 w-24 rounded-full border-4 border-[#f0edff] object-cover sm:h-28 sm:w-28"
                     />

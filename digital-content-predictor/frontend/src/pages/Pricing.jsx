@@ -71,8 +71,7 @@ export default function Pricing() {
             </h2>
 
             <p className="mt-2 max-w-2xl text-base leading-6 text-[#596174]">
-              Unlock your full creative potential with our pro tools. No hidden
-              fees, cancel anytime.
+              Unlock your full creative potential with our pro tools.
             </p>
           </div>
 
@@ -134,12 +133,10 @@ export default function Pricing() {
 
             <div>
               <h3 className="text-xl font-bold text-[#202638]">
-                1 MONTH
+                MONTHLY
               </h3>
 
-              <p className="mt-1 max-w-md text-sm leading-5 text-[#697084]">
-                Essential tools for creators who are getting started.
-              </p>
+              
             </div>
 
             {/* PRICE */}
@@ -154,6 +151,10 @@ export default function Pricing() {
               </span>
             </div>
 
+            <p className="mt-4 max-w-md text-sm leading-5 text-[#697084]">
+                7 days free, then $12.99 every month.
+              </p>
+
             {/* BUTTON */}
 
             <button
@@ -161,12 +162,14 @@ export default function Pricing() {
               onClick={() => startCheckout("basic", prices.basic)}
               className="mt-8 h-10 w-full rounded-lg border border-[#969caf] bg-white text-sm font-semibold text-[#30384b] transition hover:bg-[#f7f8fc]"
             >
-              {plan === "basic" ? "Change billing" : "Choose Basic"}
+              {plan === "basic" ? "Change billing" : "Choose MONTHLY"}
             </button>
 
+
+            
             {/* FEATURES */}
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <p className="text-xs font-extrabold uppercase tracking-wider text-[#51586a]">
                 WHAT'S INCLUDED
               </p>
@@ -192,7 +195,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
           </div>
 
           {/* ==========================================
@@ -210,14 +213,11 @@ export default function Pricing() {
 
             <div>
               <h3 className="text-xl font-bold text-white">
-                6 MONTHS
+                BI-ANNUALY
               </h3>
 
 
-              <p className="mt-1 max-w-md text-sm leading-5 text-white/80">
-                Advanced tools and insights for creators who want to grow
-                faster.
-              </p>
+              
             </div>
 
             {/* PRICE */}
@@ -232,6 +232,10 @@ export default function Pricing() {
               </span>
             </div>
 
+            <p className="mt-4 max-w-md text-sm leading-5 text-white/80">
+                Billed every 6 months as $71.99
+              </p>
+
             {/* BUTTON */}
 
             <button
@@ -239,12 +243,12 @@ export default function Pricing() {
               onClick={() => startCheckout("pro", prices.pro)}
               className="mt-8 h-10 w-full rounded-lg bg-white text-sm font-semibold text-[#5146e5] transition hover:bg-[#f3f4ff]"
             >
-              {isPremium ? "Change billing" : "Upgrade to Pro"}
+              {isPremium ? "Change billing" : "Choose BI-ANNUALY"}
             </button>
 
             {/* FEATURES */}
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <p className="text-xs font-extrabold uppercase tracking-wider text-white/80">
                 EVERYTHING IN BASIC, PLUS:
               </p>
@@ -271,7 +275,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
           </div>
 
           {/* ==========================================
@@ -283,12 +287,10 @@ export default function Pricing() {
 
             <div>
               <h3 className="text-xl font-bold text-[#202638]">
-                1 YEAR
+                ANNUALY
               </h3>
 
-              <p className="mt-1 max-w-md text-sm leading-5 text-[#697084]">
-                Powerful tools and dedicated support for growing teams.
-              </p>
+              
             </div>
 
             {/* PRICE */}
@@ -303,6 +305,10 @@ export default function Pricing() {
               </span>
             </div>
 
+            <p className="mt-4 max-w-md text-sm leading-5 text-[#697084]">
+                Billed every 12 months as $119.99.
+              </p>
+
             {/* BUTTON */}
 
             <button
@@ -312,12 +318,12 @@ export default function Pricing() {
               }
               className="mt-8 h-10 w-full rounded-lg border border-[#969caf] bg-white text-sm font-semibold text-[#30384b] transition hover:bg-[#f7f8fc]"
             >
-              Choose Enterprise
+              Choose ANNUALY
             </button>
 
             {/* FEATURES */}
 
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <p className="text-xs font-extrabold uppercase tracking-wider text-[#51586a]">
                 EVERYTHING IN PRO, PLUS:
               </p>
@@ -344,7 +350,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
