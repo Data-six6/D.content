@@ -52,19 +52,7 @@ generate_captions_for_platforms(
     content_purpose="Business/Promotion",
 )
 # -> {"TikTok": {...}, "Instagram": {...}, "Facebook": {...}}
-```
 
-### 4. Standalone Hashtags — `hashtag/hashtag_generator.py`
-
-Use this if the frontend needs a "refresh hashtags" button without
-regenerating the whole caption.
-
-```python
-from hashtag.hashtag_generator import generate_hashtags
-
-generate_hashtags(caption="...", platform="TikTok", category="Gaming", num_hashtags=8)
-# -> ["tag1", "tag2", ...]
-```
 
 ### 5. Safety Check — `content_generation/safety_check.py`
 
