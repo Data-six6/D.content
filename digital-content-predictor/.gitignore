@@ -21,10 +21,14 @@ data/raw/*.csv
 data/processed/*.csv
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/processed/cleaned_dataset.csv
+!data/processed/model_ready_dataset.csv
 
 # ML artifacts
 ml/saved_models/*.pkl
 !ml/saved_models/.gitkeep
+!ml/saved_models/best_model.pkl
+!ml/saved_models/cluster_mapping.pkl
 
 # IDE / OS
 .vscode/

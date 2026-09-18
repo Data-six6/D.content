@@ -1,0 +1,150 @@
+{
+    "metrics": {
+        "Hierarchical": {
+            "2": {
+                "silhouette": 0.1543767981420145,
+                "davies_bouldin": 2.277907588597476,
+                "calinski_harabasz": 271.22574728355437,
+                "cluster_sizes": [
+                    2355,
+                    422
+                ]
+            },
+            "3": {
+                "silhouette": 0.12273396407659148,
+                "davies_bouldin": 2.4807043202097736,
+                "calinski_harabasz": 272.3684595619661,
+                "cluster_sizes": [
+                    1756,
+                    422,
+                    599
+                ]
+            },
+            "4": {
+                "silhouette": 0.0961142403748244,
+                "davies_bouldin": 2.623235702533975,
+                "calinski_harabasz": 243.30368288437145,
+                "cluster_sizes": [
+                    1248,
+                    422,
+                    599,
+                    508
+                ]
+            },
+            "5": {
+                "silhouette": 0.07394505805809676,
+                "davies_bouldin": 2.6841065499592984,
+                "calinski_harabasz": 210.8533199315452,
+                "cluster_sizes": [
+                    914,
+                    422,
+                    599,
+                    508,
+                    334
+                ]
+            },
+            "6": {
+                "silhouette": 0.05495839646530582,
+                "davies_bouldin": 2.636248942738569,
+                "calinski_harabasz": 187.89316763892384,
+                "cluster_sizes": [
+                    599,
+                    422,
+                    540,
+                    508,
+                    334,
+                    374
+                ]
+            }
+        },
+        "KMeans": {
+            "2": {
+                "silhouette": 0.1543767981420145,
+                "davies_bouldin": 2.277907588597476,
+                "calinski_harabasz": 271.22574728355437,
+                "cluster_sizes": [
+                    422,
+                    2355
+                ]
+            },
+            "3": {
+                "silhouette": 0.10283679674541053,
+                "davies_bouldin": 2.6820277479803196,
+                "calinski_harabasz": 259.06621011843833,
+                "cluster_sizes": [
+                    422,
+                    721,
+                    1634
+                ]
+            },
+            "4": {
+                "silhouette": 0.10824612065597265,
+                "davies_bouldin": 2.483030064790253,
+                "calinski_harabasz": 253.95925196556107,
+                "cluster_sizes": [
+                    530,
+                    1233,
+                    422,
+                    592
+                ]
+            },
+            "5": {
+                "silhouette": 0.08482754480277899,
+                "davies_bouldin": 2.4812447189987323,
+                "calinski_harabasz": 231.6795597158844,
+                "cluster_sizes": [
+                    511,
+                    718,
+                    607,
+                    519,
+                    422
+                ]
+            },
+            "6": {
+                "silhouette": 0.07389260322827176,
+                "davies_bouldin": 2.395381327757454,
+                "calinski_harabasz": 209.1256019605367,
+                "cluster_sizes": [
+                    380,
+                    494,
+                    422,
+                    455,
+                    508,
+                    518
+                ]
+            }
+        }
+    },
+    "profiles": {
+        "Cluster_0": {
+            "count": 1756,
+            "tier": "Low",
+            "avg_engagement_rate": 11.23155466970387,
+            "common_platform": "Instagram",
+            "common_topic": "Gaming",
+            "avg_follower_count": 246291.35193621868,
+            "avg_hashtag_count": 14.403189066059225,
+            "common_sentiment": "Positive"
+        },
+        "Cluster_1": {
+            "count": 422,
+            "tier": "Medium",
+            "avg_engagement_rate": 11.36414691943128,
+            "common_platform": "Instagram",
+            "common_topic": "Fashion",
+            "avg_follower_count": 252513.45497630333,
+            "avg_hashtag_count": 14.699052132701421,
+            "common_sentiment": "Positive"
+        },
+        "Cluster_2": {
+            "count": 599,
+            "tier": "High",
+            "avg_engagement_rate": 13.332704507512519,
+            "common_platform": "Instagram",
+            "common_topic": "Technology",
+            "avg_follower_count": 239562.63606010017,
+            "avg_hashtag_count": 14.612687813021703,
+            "common_sentiment": "Positive"
+        }
+    }
+}
