@@ -31,29 +31,31 @@ CATEGORY_PLACEHOLDERS = {
 }
 
 
-def format_full_plan(plan):
-    """Format the combined idea + captions response."""
-    if not plan or not plan.get("idea"):
+def format_combined_plan(plan):
+    """Format the single-request response for display."""
+    if not plan:
         return "### Error\n\nNo result returned. Please try again."
 
-    idea = plan["idea"]
-    captions = plan.get("captions", {})
+    idea_text = plan.get("idea", "")
+    title = plan.get("title", "")
+    captions = plan.get("captions", [])
+    posting_times = plan.get("posting_times", {})
+    ideas_list = plan.get("ideas", [])
 
-    if not idea.get("recommended_idea"):
+    if not idea_text:
         return ("### Error\n\n"
                 "The AI returned an empty result. This usually means the API is overloaded. "
                 "Please wait a few seconds and try again.")
 
-    output = f"## Recommended Idea\n\n{idea['recommended_idea']}\n\n"
-    output += f"**Content Type:** {idea['content_type']}\n\n"
+    output = f"## Recommended Idea\n\n{idea_text}\n\n"
+    output += f"**Content Type:** {title}\n\n"
 
-    alternatives = idea.get("alternative_ideas", [])
+    alternatives = ideas_list[0].get("alternates", []) if ideas_list else []
     if alternatives:
         output += "## Alternative Ideas\n\n"
         for i, alt in enumerate(alternatives, 1):
-            output += f"{i}. {alt}\n"
+            output += f"{i}. {alt.get('idea_name', alt)}\n"
 
-    posting_times = idea.get("best_posting_times", {})
     if posting_times:
         output += "\n## Best Posting Times (Cambodia)\n\n"
         for platform, times in posting_times.items():
@@ -61,27 +63,18 @@ def format_full_plan(plan):
 
     output += "\n---\n\n"
 
-    for platform in PLATFORMS:
-        data = captions.get(platform)
-        if not data or not data.get("caption"):
+    for cap in captions:
+        platform = cap.get("platform", "Unknown")
+        caption_text = cap.get("caption", "")
+        hashtag_str = cap.get("hashtag", "")
+
+        if not caption_text:
             output += f"### {platform}\n\n*Failed to generate. Please try again.*\n\n---\n\n"
             continue
 
-        safety = data.get("safety", {})
-        hashtags = data.get("hashtags", [])
-        hashtag_str = " ".join(f"#{h}" for h in hashtags) if hashtags else "No hashtags"
-
-        safety_note = ""
-        if not safety.get("safe", True):
-            reason = safety.get("reason", "No reason provided")
-            safety_note = f"\n\n> **Safety Warning:** {reason}\n"
-        elif safety.get("reason") == "safety check unavailable, skipped":
-            safety_note = "\n\n> *Safety check skipped (API unavailable)*\n"
-
         output += f"### {platform}\n\n"
-        output += f"**Caption:**\n{data['caption']}\n\n"
+        output += f"**Caption:**\n{caption_text}\n\n"
         output += f"**Hashtags:**\n{hashtag_str}\n"
-        output += safety_note
         output += "\n---\n\n"
 
     return output
@@ -99,8 +92,8 @@ def format_safety_result(result):
 
 def run_full_plan(category, product, audience, goal, platform, purpose):
     try:
-        plan = ai.generate_content_plan(category, product, audience, goal, platform, purpose)
-        return format_full_plan(plan)
+        plan = ai.generate_single_request(category, product, audience, goal, platform, purpose)
+        return format_combined_plan(plan)
     except Exception as e:
         return f"### Error\n\nSomething went wrong: {e}\n\nPlease try again."
 

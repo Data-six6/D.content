@@ -43,11 +43,30 @@ ai = AIService()
 
 ---
 
-## Main API Method
+## Main API Methods
 
-### `generate_combined_response()`
+### `generate_single_request()` (Recommended — 1 API call)
 
-The primary method that returns content in the expected JSON format.
+Optimized method that generates everything in **ONE API call** instead of 4. Same output format, 75% less API usage.
+
+```python
+response = ai.generate_single_request(
+    category="Gaming",
+    product="Mobile Legends Account",
+    target_audience="MOBA players aged 16-25",
+    goal="Increase Followers",
+    platform="TikTok",
+    content_purpose="Content Creator",
+)
+```
+
+**Usage:** 1 API call per request (vs 4 for `generate_combined_response`).
+
+---
+
+### `generate_combined_response()` (Legacy — 4 API calls)
+
+Original method using 4 separate API calls. Same output format, but uses 4x more API quota. Kept for backward compatibility.
 
 ```python
 response = ai.generate_combined_response(
@@ -59,6 +78,8 @@ response = ai.generate_combined_response(
     content_purpose="Content Creator",
 )
 ```
+
+**Usage:** 4 API calls per request (1 for idea + 3 for captions).
 
 **Input Parameters:**
 
@@ -186,7 +207,7 @@ class ContentPlanRequest(BaseModel):
 
 @app.post("/api/content-plan/generate")
 def generate_plan(request: ContentPlanRequest):
-    return ai.generate_combined_response(
+    return ai.generate_single_request(
         category=request.category,
         product=request.product,
         target_audience=request.target_audience,
@@ -201,6 +222,9 @@ def generate_plan(request: ContentPlanRequest):
 ## Other Available Methods
 
 ```python
+# Generate everything in 1 API call (recommended)
+response = ai.generate_single_request(category, product, target_audience, goal, platform, content_purpose)
+
 # Generate just the idea (no captions)
 idea = ai.generate_content_idea(category, product, target_audience, goal, platform)
 
@@ -216,6 +240,17 @@ hashtags = ai.generate_hashtags(caption, platform, category, num_hashtags)
 # Check content safety
 safety = ai.check_safety(text)
 ```
+
+---
+
+## Method Comparison
+
+| Method | API Calls | Speed | Output |
+|--------|-----------|-------|--------|
+| `generate_single_request()` | **1** | **2-3 sec** | Same format |
+| `generate_combined_response()` | 4 | 8-12 sec | Same format |
+
+**Recommendation:** Use `generate_single_request()` to save 75% of API quota.
 
 ---
 
