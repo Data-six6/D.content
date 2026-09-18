@@ -1,6 +1,7 @@
 """Engagement prediction service loading saved pipeline and generating class predictions."""
 
 from typing import Dict, Any, List, Union, Optional
+import copy
 import pandas as pd
 import numpy as np
 import joblib
@@ -174,3 +175,177 @@ class EngagementPredictor:
     def predict_batch(self, payloads: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Run predictions across a batch of post scenarios."""
         return [self.predict(p) for p in payloads]
+
+
+_shared_predictor = None
+_shared_comparator = None
+_shared_recommender = None
+
+
+def get_ml_suite():
+    """Lazily load and reuse ML service singletons across requests."""
+    global _shared_predictor, _shared_comparator, _shared_recommender
+    if _shared_predictor is None:
+        from ml.prediction.platform_comparator import PlatformComparator
+        from ml.recommendations.posting_time import PostingTimeRecommender
+
+        _shared_predictor = EngagementPredictor()
+        _shared_comparator = PlatformComparator(_shared_predictor)
+        _shared_recommender = PostingTimeRecommender(_shared_predictor)
+    return _shared_predictor, _shared_comparator, _shared_recommender
+
+
+def predict_content_plan(input_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Unified API function evaluating a content plan draft across all 3 analytical capabilities:
+
+    1. Engagement Prediction (per platform)
+    2. Platform Comparison (multi-platform ranking & insights)
+    3. Best Posting Time Recommendation (hourly distribution)
+
+    Args:
+        input_data (Dict[str, Any]): Dictionary containing pre-posting features:
+            - Platform (str): 'TikTok', 'Instagram', or 'Facebook'
+            - Content_Type (str): e.g. 'Video', 'Photo', 'Carousel', etc.
+            - Category (str): e.g. 'Food', 'Fashion', 'Business', etc.
+            - Day_of_Week (str): e.g. 'Friday', 'Wednesday', etc.
+            - Sentiment (str): 'Positive', 'Neutral', 'Negative'
+            - Influencer_Tier (str): 'Nano', 'Micro', 'Mid-tier', 'Macro'
+            - Hour_of_Day (int): 0-23
+            - Month (int, optional): 1-12 (derived from planned_posting_date or current calendar month)
+            - Hashtag_Count (int): e.g. 4
+            - Content_Length (int, optional): character length (derived from caption if omitted)
+            - Follower_Count (int): e.g. 35000
+            - Has_Media (bool): True for With Media, False for Text-Only
+            - Is_Verified (bool): True for Verified Creator, False for Regular Creator
+            - platforms (List[str], optional): specific platforms to evaluate/compare
+
+    Returns:
+        Dict[str, Any]: JSON-serializable dictionary with:
+            - input: sanitized 13 pre-posting features
+            - engagement_prediction: dict of {platform: {level, cluster_id, cluster_membership_confidence, ...}}
+            - platform_comparison: list of platform ranking details with comparison summary
+            - best_posting_time: dict containing recommended hour, time window, and hourly breakdown
+    """
+    predictor, comparator, recommender = get_ml_suite()
+    raw = copy.deepcopy(input_data)
+
+    # 1. Derive Month from planned_posting_date if provided (never hardcoded 6)
+    if "planned_posting_date" in raw and ("Month" not in raw or raw["Month"] is None):
+        raw["Month"] = parse_date_to_month(raw["planned_posting_date"])
+    elif "Month" not in raw or raw["Month"] is None:
+        raw["Month"] = datetime.now().month
+
+    # 2. Derive Content_Length from caption text if provided (never hardcoded 150)
+    if "caption" in raw and ("Content_Length" not in raw or raw["Content_Length"] is None):
+        caption_text = str(raw.get("caption") or "").strip()
+        raw["Content_Length"] = len(caption_text)
+    elif "Content_Length" not in raw or raw["Content_Length"] is None:
+        raw["Content_Length"] = 0
+
+    # 3. Determine platforms to evaluate
+    if "platforms" in raw and isinstance(raw["platforms"], list) and len(raw["platforms"]) > 0:
+        eval_platforms = [resolve_platform(p) for p in raw["platforms"]]
+    elif isinstance(raw.get("Platform"), list) and len(raw["Platform"]) > 0:
+        eval_platforms = [resolve_platform(p) for p in raw["Platform"]]
+    elif raw.get("Platform"):
+        eval_platforms = [resolve_platform(raw["Platform"])]
+    else:
+        eval_platforms = list(SUPPORTED_PLATFORMS)
+
+    if raw.get("Platform") and raw.get("Platform") in eval_platforms:
+        primary_platform = raw["Platform"]
+    else:
+        primary_platform = eval_platforms[0]
+    raw["Platform"] = primary_platform
+
+    # 4. Sanitize base post features (strictly pre-posting features only)
+    base_post = predictor._validate_and_sanitize_input(raw)
+
+    # 5. Feature 1: Engagement predictions per platform
+    engagement_prediction = {}
+    for plat in eval_platforms:
+        adapted_type = comparator._adapt_content_type(plat, base_post.get("Content_Type", "Video"))
+        p_post = copy.deepcopy(base_post)
+        p_post["Platform"] = plat
+        p_post["Content_Type"] = adapted_type
+
+        pred_res = predictor.predict(p_post)
+        conf_val = round(float(pred_res["confidence"]), 4)
+        engagement_prediction[plat] = {
+            "level": pred_res["predicted_engagement"],
+            "cluster_id": int(pred_res["cluster_id"]),
+            "cluster_membership_confidence": conf_val,
+            "confidence": conf_val,
+            "confidence_metric": "cluster_membership_confidence",
+            "probabilities": {k: round(float(v), 4) for k, v in pred_res["probabilities"].items()},
+            "content_type_used": adapted_type,
+            "interpretation": (
+                f"Content draft aligns with cluster {pred_res['cluster_id']} "
+                f"({pred_res['predicted_engagement']} historical tier) with "
+                f"{round(conf_val * 100, 1)}% cluster similarity confidence."
+            ),
+        }
+
+    # 6. Feature 2: Multi-Platform Comparison
+    compare_platforms = eval_platforms if len(eval_platforms) > 1 else list(SUPPORTED_PLATFORMS)
+    comp_res = comparator.compare(base_post, platforms=compare_platforms)
+    platform_comparison = []
+    for rank_idx, p_name in enumerate(comp_res["recommended_platform_ranking"]):
+        p_data = comp_res["platform_predictions"][p_name]
+        platform_comparison.append({
+            "platform": p_name,
+            "rank": int(rank_idx + 1),
+            "predicted_engagement": p_data["predicted_engagement"],
+            "cluster_membership_confidence": round(float(p_data["confidence"]), 4),
+            "high_probability": round(float(p_data["high_probability"]), 4),
+            "adapted_content_type": p_data["adapted_content_type"],
+        })
+
+    # 7. Feature 3: Best Posting Time Recommendation
+    time_res = recommender.get_best_posting_times(base_post)
+    best_time_slot = time_res["all_predictions"][0] if time_res.get("all_predictions") else {}
+    best_hour_int = int(best_time_slot.get("hour", base_post.get("Hour_of_Day", 12)))
+
+    best_posting_time = {
+        "platform": time_res.get("platform", primary_platform),
+        "day_of_week": base_post.get("Day_of_Week", "Wednesday"),
+        "hour": best_hour_int,
+        "recommended_peak_hour": time_res.get("recommended_peak_hour", f"{best_hour_int:02d}:00 - {best_hour_int:02d}:59"),
+        "predicted_engagement": best_time_slot.get("predicted_engagement", "High"),
+        "cluster_membership_confidence": round(float(best_time_slot.get("high_probability", 0.5)), 4),
+        "recommendation_summary": time_res.get("recommendation_summary", ""),
+        "all_predictions": time_res.get("all_predictions", []),
+    }
+
+    # 8. Clean, serialized input summary
+    input_summary = {
+        "Platform": base_post["Platform"],
+        "Content_Type": base_post["Content_Type"],
+        "Category": base_post["Category"],
+        "Day_of_Week": base_post["Day_of_Week"],
+        "Sentiment": base_post["Sentiment"],
+        "Influencer_Tier": base_post["Influencer_Tier"],
+        "Hour_of_Day": int(base_post["Hour_of_Day"]),
+        "Month": int(base_post["Month"]),
+        "Hashtag_Count": int(base_post["Hashtag_Count"]),
+        "Content_Length": int(base_post["Content_Length"]),
+        "Follower_Count": int(base_post["Follower_Count"]),
+        "Has_Media": bool(base_post["Has_Media"]),
+        "Is_Verified": bool(base_post["Is_Verified"]),
+    }
+    if "caption" in raw:
+        input_summary["caption"] = str(raw["caption"])
+    if "planned_posting_date" in raw:
+        input_summary["planned_posting_date"] = str(raw["planned_posting_date"])
+    if "platforms" in raw:
+        input_summary["platforms"] = raw["platforms"]
+
+    return {
+        "status": "success",
+        "input": input_summary,
+        "engagement_prediction": engagement_prediction,
+        "platform_comparison": platform_comparison,
+        "best_platform": comp_res.get("best_platform", primary_platform),
+        "comparison_summary": comp_res.get("summary_insight", ""),
+        "best_posting_time": best_posting_time,
+    }

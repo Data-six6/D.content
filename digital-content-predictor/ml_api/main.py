@@ -12,7 +12,7 @@ if str(BASE_DIR) not in sys.path:
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from ml.prediction.predictor import EngagementPredictor, parse_date_to_month
+from ml.prediction.predictor import EngagementPredictor, parse_date_to_month, predict_content_plan
 from ml.prediction.platform_comparator import PlatformComparator
 from ml.recommendations.posting_time import PostingTimeRecommender
 try:
@@ -22,6 +22,7 @@ try:
         PlatformComparisonRequest,
         BestTimeRequest,
         HealthResponse,
+        ContentPlanRequest,
     )
 except ImportError:
     from backend.schemas import (
@@ -30,7 +31,9 @@ except ImportError:
         PlatformComparisonRequest,
         BestTimeRequest,
         HealthResponse,
+        ContentPlanRequest,
     )
+
 
 
 app = FastAPI(
@@ -117,6 +120,17 @@ def recommend_best_time(request: BestTimeRequest):
         return recommender.get_best_posting_times(payload)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Time recommendation error: {str(e)}")
+
+
+@app.post("/api/predict-content-plan", tags=["Unified Plan"])
+@app.post("/predict-content-plan", tags=["Unified Plan"])
+def api_predict_content_plan(request: ContentPlanRequest):
+    """Unified API performing engagement prediction, platform comparison, and best posting time in one call."""
+    try:
+        raw_dict = request.model_dump(exclude_unset=False)
+        return predict_content_plan(raw_dict)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Content plan prediction error: {str(e)}")
 
 
 if __name__ == "__main__":

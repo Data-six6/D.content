@@ -1,0 +1,157 @@
+{
+  "status": "success",
+  "input": {
+    "Platform": "TikTok",
+    "Content_Type": "Video",
+    "Category": "Food",
+    "Day_of_Week": "Friday",
+    "Sentiment": "Positive",
+    "Influencer_Tier": "Micro",
+    "Hour_of_Day": 19,
+    "Month": 9,
+    "Hashtag_Count": 4,
+    "Content_Length": 230,
+    "Follower_Count": 35000,
+    "Has_Media": true,
+    "Is_Verified": false,
+    "caption": "Exploring the vibrant night market in Phnom Penh! Trying delicious Khmer street food delicacies with crispy spring rolls and iced coffee. What is your favorite street snack? Let us know below! #streetfood #cambodia #foodie #travel",
+    "planned_posting_date": "2026-09-20",
+    "platforms": [
+      "Facebook",
+      "Instagram",
+      "TikTok"
+    ]
+  },
+  "engagement_prediction": {
+    "Facebook": {
+      "level": "High",
+      "cluster_id": 1,
+      "cluster_membership_confidence": 0.4884,
+      "confidence": 0.4884,
+      "confidence_metric": "cluster_membership_confidence",
+      "probabilities": {
+        "Low": 0.2746,
+        "Medium": 0.237,
+        "High": 0.4884
+      },
+      "content_type_used": "Video",
+      "interpretation": "Content draft aligns with cluster 1 (High historical tier) with 48.8% cluster similarity confidence."
+    },
+    "Instagram": {
+      "level": "High",
+      "cluster_id": 1,
+      "cluster_membership_confidence": 0.4882,
+      "confidence": 0.4882,
+      "confidence_metric": "cluster_membership_confidence",
+      "probabilities": {
+        "Low": 0.2695,
+        "Medium": 0.2422,
+        "High": 0.4882
+      },
+      "content_type_used": "Video",
+      "interpretation": "Content draft aligns with cluster 1 (High historical tier) with 48.8% cluster similarity confidence."
+    },
+    "TikTok": {
+      "level": "High",
+      "cluster_id": 1,
+      "cluster_membership_confidence": 0.4911,
+      "confidence": 0.4911,
+      "confidence_metric": "cluster_membership_confidence",
+      "probabilities": {
+        "Low": 0.2804,
+        "Medium": 0.2284,
+        "High": 0.4911
+      },
+      "content_type_used": "Video",
+      "interpretation": "Content draft aligns with cluster 1 (High historical tier) with 49.1% cluster similarity confidence."
+    }
+  },
+  "platform_comparison": [
+    {
+      "platform": "TikTok",
+      "rank": 1,
+      "predicted_engagement": "High",
+      "cluster_membership_confidence": 0.4911,
+      "high_probability": 0.4911,
+      "adapted_content_type": "Video"
+    },
+    {
+      "platform": "Facebook",
+      "rank": 2,
+      "predicted_engagement": "High",
+      "cluster_membership_confidence": 0.4884,
+      "high_probability": 0.4884,
+      "adapted_content_type": "Video"
+    },
+    {
+      "platform": "Instagram",
+      "rank": 3,
+      "predicted_engagement": "High",
+      "cluster_membership_confidence": 0.4882,
+      "high_probability": 0.4882,
+      "adapted_content_type": "Video"
+    }
+  ],
+  "best_platform": "TikTok",
+  "comparison_summary": "'TikTok' shows the strongest engagement potential for this content (High tier, 49.1% High probability).",
+  "best_posting_time": {
+    "platform": "TikTok",
+    "day_of_week": "Friday",
+    "hour": 12,
+    "recommended_peak_hour": "12:00 - 12:59",
+    "predicted_engagement": "High",
+    "cluster_membership_confidence": 0.5031,
+    "recommendation_summary": "Based on predicted engagement, the recommended posting time is 12:00 - 12:59.",
+    "all_predictions": [
+      {
+        "hour": 12,
+        "time_window": "12:00 - 12:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.5031,
+        "medium_probability": 0.2193
+      },
+      {
+        "hour": 15,
+        "time_window": "15:00 - 15:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.5017,
+        "medium_probability": 0.2211
+      },
+      {
+        "hour": 9,
+        "time_window": "09:00 - 09:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.4983,
+        "medium_probability": 0.2211
+      },
+      {
+        "hour": 18,
+        "time_window": "18:00 - 18:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.4945,
+        "medium_probability": 0.2262
+      },
+      {
+        "hour": 19,
+        "time_window": "19:00 - 19:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.4911,
+        "medium_probability": 0.2284
+      },
+      {
+        "hour": 20,
+        "time_window": "20:00 - 20:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.4873,
+        "medium_probability": 0.231
+      },
+      {
+        "hour": 21,
+        "time_window": "21:00 - 21:59",
+        "predicted_engagement": "High",
+        "high_probability": 0.4832,
+        "medium_probability": 0.2337
+      }
+    ]
+  }
+}

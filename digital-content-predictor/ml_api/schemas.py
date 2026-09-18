@@ -75,8 +75,30 @@ class BestTimeRequest(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """Health check status response."""
+    """Schema for health check."""
     status: str
     model_name: str
     num_clusters: int
     tiers: List[str]
+
+
+class ContentPlanRequest(BaseModel):
+    """Schema for unified content plan prediction covering prediction, comparison, and best times."""
+    Platform: Optional[str] = Field(default="Instagram", description="Target platform (TikTok, Instagram, Facebook)", example="TikTok")
+    Content_Type: Optional[str] = Field(default="Video", description="Format of content (Video, Photo, Reel, etc.)", example="Video")
+    Category: Optional[str] = Field(default="Entertainment", description="Content niche/category", example="Food")
+    Day_of_Week: Optional[str] = Field(default="Friday", description="Day of publication", example="Friday")
+    Sentiment: Optional[str] = Field(default="Positive", description="Caption sentiment (Positive, Neutral, Negative)", example="Positive")
+    Influencer_Tier: Optional[str] = Field(default="Micro", description="Creator tier (Nano, Micro, Mid-tier, Macro)", example="Micro")
+    Hour_of_Day: Optional[int] = Field(default=18, ge=0, le=23, description="Hour of the day (0-23)", example=19)
+    Month: Optional[int] = Field(default=None, ge=1, le=12, description="Month of publication (1-12)", example=9)
+    Hashtag_Count: Optional[int] = Field(default=4, ge=0, le=30, description="Number of hashtags used", example=4)
+    Content_Length: Optional[int] = Field(default=None, ge=0, description="Caption length in characters", example=120)
+    Follower_Count: Optional[int] = Field(default=25000, ge=0, description="Total account followers", example=35000)
+    Has_Media: Optional[bool] = Field(default=True, description="True if post contains image/video, False if text-only", example=True)
+    Is_Verified: Optional[bool] = Field(default=False, description="True if creator account is verified", example=False)
+
+    # Optional convenience inputs
+    planned_posting_date: Optional[str] = Field(default=None, description="Optional ISO date (YYYY-MM-DD)", example="2026-09-20")
+    caption: Optional[str] = Field(default=None, description="Optional caption text", example="Delicious street food in Phnom Penh! #foodie")
+    platforms: Optional[List[str]] = Field(default=None, description="Optional list of platforms to evaluate simultaneously", example=["Facebook", "Instagram", "TikTok"])
