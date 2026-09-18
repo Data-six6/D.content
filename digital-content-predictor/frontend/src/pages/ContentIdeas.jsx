@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import PageShell from "../components/layout/PageShell.jsx";
 import api from "../services/api";
 import ContentResult, { normalizePlan, hasRecommendations } from "../components/ai/ContentResult.jsx";
@@ -41,13 +41,65 @@ function EngagementBadge({ level, trend }) {
   );
 }
 
-function FilterButton({ label }) {
+// Generic dropdown filter used for category, platform, and date-sort controls.
+// `options` is an array of { value, label }; the first entry is treated as the
+// "default"/unfiltered state for styling purposes.
+function FilterDropdown({ icon, options, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selected = options.find((opt) => opt.value === value) || options[0];
+  const isActive = value !== options[0].value;
+  const Icon = icon;
+
   return (
-    <button className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors whitespace-nowrap">
-      {label === "Date" && <Calendar size={15} className="text-slate-400" />}
-      <span>{label}</span>
-      {label !== "Date" && <ChevronDown size={14} className="text-slate-400" />}
-    </button>
+    <div className="relative" ref={containerRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`flex items-center gap-1.5 rounded-lg border px-3.5 py-2.5 text-sm transition-colors whitespace-nowrap ${
+          isActive
+            ? "border-violet-200 bg-violet-50 text-violet-700"
+            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+        }`}
+      >
+        {Icon && <Icon size={15} className={isActive ? "text-violet-500" : "text-slate-400"} />}
+        <span>{selected.label}</span>
+        <ChevronDown size={14} className={isActive ? "text-violet-500" : "text-slate-400"} />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 z-10 mt-1.5 min-w-[10rem] overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`block w-full px-3.5 py-2 text-left text-sm transition-colors ${
+                opt.value === value
+                  ? "bg-violet-50 font-medium text-violet-700"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -131,6 +183,66 @@ export default function ContentPlanCards() {
   const [selectedKey, setSelectedKey] = useState(0);
   const resultRef = useRef(null);
 
+  // Search + filter state.
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [platformFilter, setPlatformFilter] = useState("all");
+  const [dateSort, setDateSort] = useState("newest");
+
+  // Build dropdown options from whatever categories/platforms actually show
+  // up in the saved plans, so the filters never offer choices with no results.
+  const categoryOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(saved.map((p) => p.product_category).filter(Boolean))
+    ).sort();
+    return [
+      { value: "all", label: "All Categories" },
+      ...unique.map((c) => ({ value: c, label: c })),
+    ];
+  }, [saved]);
+
+  const platformOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(saved.map((p) => p.plan_channel).filter(Boolean))
+    ).sort();
+    return [
+      { value: "all", label: "All Platforms" },
+      ...unique.map((p) => ({ value: p, label: p })),
+    ];
+  }, [saved]);
+
+  const dateOptions = [
+    { value: "newest", label: "Newest First" },
+    { value: "oldest", label: "Oldest First" },
+  ];
+
+  // Apply search text, category/platform filters, and date sort.
+  const visiblePlans = useMemo(() => {
+    const q = query.trim().toLowerCase();
+
+    let list = saved.filter((plan) => {
+      const matchesQuery = !q || String(plan.product_name ?? "").toLowerCase().includes(q);
+
+      const matchesCategory =
+        categoryFilter === "all" || plan.product_category === categoryFilter;
+
+      const matchesPlatform =
+        platformFilter === "all" || plan.plan_channel === platformFilter;
+
+      return matchesQuery && matchesCategory && matchesPlatform;
+    });
+
+    list = [...list].sort((a, b) => {
+      const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      return dateSort === "newest" ? -diff : diff;
+    });
+
+    return list;
+  }, [saved, query, categoryFilter, platformFilter, dateSort]);
+
+  const hasActiveFilters =
+    query.trim() !== "" || categoryFilter !== "all" || platformFilter !== "all";
+
   const load = () => {
     setLoading(true);
     setError("");
@@ -162,13 +274,18 @@ export default function ContentPlanCards() {
 
   return (
     <PageShell title="" description="" backTo="/dashboard">
-      <div className="min-h-screen p-10 px-20 bg-white">
-        <div className="border-b pb-4">
+      <div className="min-h-screen p-10 px-8 bg-white">
+        {!selectedResult &&
+        <div>
+            <div className="border-b pb-4">
             <h1 className="text-xl font-semibold text-neutral-900 mb-1">Saved Plans</h1>
             <p className="text-sm text-neutral-500">
               Review and manage your past AI content analyses.
             </p>
           </div>
+          </div>
+        }
+        
         <div className="mx-auto mt-6">
           {selectedResult ? (
             <div ref={resultRef}>
@@ -190,13 +307,28 @@ export default function ContentPlanCards() {
                   <Search size={16} />
                   <input
                     type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search plans..."
                     className="w-full bg-transparent outline-none placeholder:text-slate-400 text-slate-700"
                   />
                 </div>
-                <FilterButton label="All Categories" />
-                <FilterButton label="All Platforms" />
-                <FilterButton label="Date" />
+                <FilterDropdown
+                  options={categoryOptions}
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+                <FilterDropdown
+                  options={platformOptions}
+                  value={platformFilter}
+                  onChange={setPlatformFilter}
+                />
+                <FilterDropdown
+                  icon={Calendar}
+                  options={dateOptions}
+                  value={dateSort}
+                  onChange={setDateSort}
+                />
               </div>
 
               {loading && (
@@ -215,9 +347,28 @@ export default function ContentPlanCards() {
                 </p>
               )}
 
+              {!loading && !error && saved.length > 0 && visiblePlans.length === 0 && (
+                <div className="py-10 text-center text-sm text-slate-400">
+                  <p>No plans match your search or filters.</p>
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery("");
+                        setCategoryFilter("all");
+                        setPlatformFilter("all");
+                      }}
+                      className="mt-2 font-semibold text-violet-600 hover:text-violet-700"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Cards grid */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {saved.map((plan) => (
+                {visiblePlans.map((plan) => (
                   <PlanCard
                     key={plan.plan_id}
                     plan={plan}

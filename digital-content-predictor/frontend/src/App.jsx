@@ -20,6 +20,7 @@ import PlaceholderPage from "./pages/PlaceholderPage.jsx";
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 import Navbar from "./components/layout/Navbar.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import HelpCenter from "./pages/HelpCenter.jsx";
 
 function AppShell() {
   const { pathname } = useLocation();
@@ -44,6 +45,14 @@ function AppShell() {
         <Route path="/create-content" element={<CreateContent />} />
         <Route path="/plan/my-content" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
         <Route path="/my-plans" element={<ProtectedRoute><MyContent /></ProtectedRoute>} />
+        <Route
+          path="/resources"
+          element={
+            <ProtectedRoute>
+              <HelpCenter />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/platform" element={<ProtectedRoute><PlatformComparison /></ProtectedRoute>} />
         <Route path="/platform-comparison" element={<ProtectedRoute><PlatformComparison /></ProtectedRoute>} />
         <Route path="/posting" element={<ProtectedRoute><PostingTime /></ProtectedRoute>} />

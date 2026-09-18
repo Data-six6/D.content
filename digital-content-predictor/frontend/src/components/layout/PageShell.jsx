@@ -17,11 +17,11 @@ export default function PageShell({ title, description, showBack = false, backTo
   }, []);
 
   return (
-    <div className="min-h-screen w-full  text-[#172033]">
+    <div className="min-h-screen w-full ] text-[#172033]">
       <div className="flex min-h-screen w-full  ">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        <main className="  w-full">
+        <main className=" bg-[#ffffff] w-full">
           {isSidebarOpen && (
             <button
               type="button"
@@ -31,7 +31,7 @@ export default function PageShell({ title, description, showBack = false, backTo
             />
           )}
 
-          <div className=" w-full sm:px-6 lg:px-0">
+          <div className="mx-auto w-full sm:px-6 lg:px-8">
             {showBack && <Link to={backTo} className="text-sm font-semibold text-[#4f46e5] hover:underline">← Back</Link>}
             <h1 className={`${showBack ? "mt-6 " : ""}text-3xl font-bold tracking-[-0.04em] text-[#172033]`}>{title}</h1>
             {description && <p className="mt-2 text-sm leading-6 text-[#667085]">{description}</p>}

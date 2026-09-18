@@ -40,10 +40,10 @@ export default function Sidebar({ isOpen = false, onClose }) {
   return (
     <aside
       className={[
-        "fixed inset-y-0 left-0 z-50 flex shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
+        "fixed left-0 top-0 z-50 flex h-screen w-[180px] shrink-0 flex-col bg-[#f5f6ff] shadow-[18px_0_40px_rgba(15,23,42,0.08)] transition-transform duration-300 ease-in-out",
         "w-[180px] border-r border-[#ebedf7]",
         isOpen ? "translate-x-0" : "-translate-x-full",
-        "lg:sticky lg:top-[16px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
+        "lg:sticky lg:top-[72px] lg:h-[calc(100vh-72px)] lg:translate-x-0 lg:shadow-none",
       ].join(" ")}
     >
       <div className="flex items-center justify-between px-3">

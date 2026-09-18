@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import PageShell from "../components/layout/PageShell.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import PageShell from "../components/layout/PageShell.jsx";
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -12,27 +12,61 @@ export default function Pricing() {
 
   const isPremium = plan === "premium";
 
-  function startCheckout() {
+  // ==========================================
+  // BACK TO DASHBOARD
+  // ==========================================
+
+  function closePricing() {
+    navigate("/dashboard");
+  }
+
+  // ==========================================
+  // START CHECKOUT
+  // ==========================================
+
+  function startCheckout(selectedPlan, price) {
     navigate("/checkout", {
       state: {
         billing,
-        plan: "premium",
+        plan: selectedPlan,
+        price,
       },
     });
   }
 
-  const premiumPrice = billing === "monthly" ? "$9.99" : "$7.99";
+  // ==========================================
+  // PRICES
+  // ==========================================
+
+  const prices = {
+    basic: billing === "monthly" ? 12.99 : 3.99,
+    pro: billing === "monthly" ? 11.99 : 15.99,
+    enterprise: billing === "monthly" ? 9.99 : 79.99,
+  };
 
   return (
-    <PageShell
-      title=""
-      description=""
-    >
-      <div className="mx-auto px-20 py-10 bg-white pb-10">
-        {/* Header */}
-        <div className="flex flex-col gap-6 border-b border-[#e4e7f2] pb-7 md:flex-row md:items-center md:justify-between">
+    <PageShell title="" description="" backTo="/dashboard">
+    <main className="min-h-[calc(100vh-4rem)] w-full ">
+      {/* ==========================================
+          PRICING HEADER
+      =========================================== */}
+
+      <div className="relative w-full px-4 py-3 sm:px-6 lg:px-0 xl:px-7">
+        {/* ==========================================
+            TOP HEADER
+        =========================================== */}
+
+        
+
+        {/* ==========================================
+            PRICING INTRO + BILLING
+        =========================================== */}
+
+        <div className="mx-auto mt-8 flex w-full max-w-[1500px] flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          {/* INTRO */}
+
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-[#182033] sm:text-4xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-[#182033] sm:text-3xl">
               Simple, transparent pricing
             </h2>
 
@@ -42,20 +76,28 @@ export default function Pricing() {
             </p>
           </div>
 
-          {/* Billing Toggle */}
-          <div className="shrink-0 rounded-xl border border-[#d9ddec] bg-[#5146e5] p-1">
+          {/* ==========================================
+              BILLING TOGGLE
+          =========================================== */}
+
+          {/* <div className="shrink-0 rounded-xl border border-[#d9ddec] bg-[#eef0f7] p-1">
             <div className="flex items-center">
+              
+
               <button
                 type="button"
                 onClick={() => setBilling("monthly")}
                 className={`rounded-lg px-5 py-2.5 text-sm font-bold transition ${
                   billing === "monthly"
                     ? "bg-white text-[#202638] shadow-sm"
-                    : "text-[#ffffff] hover:text-[#202638]"
+                    : "text-[#4f5668] hover:text-[#202638]"
                 }`}
               >
                 Monthly
               </button>
+
+              
+
 
               <button
                 type="button"
@@ -63,37 +105,48 @@ export default function Pricing() {
                 className={`rounded-lg px-5 py-2.5 text-sm font-bold transition ${
                   billing === "annual"
                     ? "bg-white text-[#202638] shadow-sm"
-                    : "text-[#ffffff] hover:text-[#202638]"
+                    : "text-[#4f5668] hover:text-[#202638]"
                 }`}
               >
                 Annually
               </button>
 
+              
+
               <span className="ml-1 rounded-lg bg-[#e5e4ff] px-2.5 py-1.5 text-[9px] font-extrabold uppercase tracking-wide text-[#5146e5]">
                 SAVE 20%
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
 
-        {/* Pricing Cards */}
-        <div className="mt-10 grid items-stretch gap-6 lg:grid-cols-2">
-          {/* FREE */}
-          <div className="flex h-full flex-col rounded-2xl border border-[#cfd4e3] bg-white p-8">
+        {/* ==========================================
+            PRICING CARDS
+        =========================================== */}
+
+        <div className="mx-auto mt-10 grid w-full max-w-[1500px] grid-cols-1 items-stretch gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {/* ==========================================
+              BASIC
+          =========================================== */}
+
+          <div className="flex h-full flex-col rounded-2xl border border-[#cfd4e3] bg-white p-8 transition hover:shadow-md">
+            {/* TITLE */}
+
             <div>
               <h3 className="text-xl font-bold text-[#202638]">
-                Free
+                1 MONTH
               </h3>
 
               <p className="mt-1 max-w-md text-sm leading-5 text-[#697084]">
-                Essential tools for starting creators to plan and organize.
+                Essential tools for creators who are getting started.
               </p>
             </div>
 
-            {/* Price */}
+            {/* PRICE */}
+
             <div className="mt-5 flex items-end">
               <span className="text-5xl font-extrabold tracking-tight text-[#151d2f]">
-                $0
+                ${prices.basic.toFixed(2)}
               </span>
 
               <span className="mb-1 ml-1 text-sm text-[#596174]">
@@ -101,16 +154,18 @@ export default function Pricing() {
               </span>
             </div>
 
-            {/* Button */}
+            {/* BUTTON */}
+
             <button
               type="button"
-              disabled
-              className="mt-8 h-10 w-full rounded-lg border border-[#969caf] bg-white text-sm font-semibold text-[#30384b]"
+              onClick={() => startCheckout("basic", prices.basic)}
+              className="mt-8 h-10 w-full rounded-lg border border-[#969caf] bg-white text-sm font-semibold text-[#30384b] transition hover:bg-[#f7f8fc]"
             >
-              Current Plan
+              {plan === "basic" ? "Change billing" : "Choose Basic"}
             </button>
 
-            {/* Features */}
+            {/* FEATURES */}
+
             <div className="mt-8">
               <p className="text-xs font-extrabold uppercase tracking-wider text-[#51586a]">
                 WHAT'S INCLUDED
@@ -118,9 +173,9 @@ export default function Pricing() {
 
               <ul className="mt-4 space-y-3">
                 {[
-                  "Up to 3 Content Plans",
+                  "Up to 10 Content Plans",
                   "Basic analytics dashboard",
-                  "50 saved ideas limit",
+                  "100 saved ideas",
                   "Standard support",
                 ].map((feature) => (
                   <li
@@ -132,6 +187,7 @@ export default function Pricing() {
                       strokeWidth={2}
                       className="shrink-0 text-[#5146e5]"
                     />
+
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -139,47 +195,58 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* PREMIUM */}
-          <div className="relative flex h-full flex-col rounded-2xl border-2 border-[#4b3ff0] bg-white p-8 shadow-[0_10px_30px_rgba(70,60,220,0.12)]">
-            {/* Recommended Badge */}
-            <div className="absolute -top-3 right-4 rounded-full bg-[#4b3ff0] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white">
-              RECOMMENDED
+          {/* ==========================================
+              PRO
+          =========================================== */}
+
+          <div className="relative flex h-full flex-col rounded-2xl border-2 border-[#4b3ff0] bg-[#5146e5] p-8 shadow-[0_10px_30px_rgba(70,60,220,0.12)]">
+            {/* MOST POPULAR */}
+
+            <div className="absolute -top-3 right-4 rounded-full bg-[#4b3ff0] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-sm">
+              MOST POPULAR
             </div>
 
+            {/* TITLE */}
+
             <div>
-              <h3 className="text-xl font-bold text-[#4b3ff0]">
-                Premium
+              <h3 className="text-xl font-bold text-white">
+                6 MONTHS
               </h3>
 
-              <p className="mt-1 max-w-md text-sm leading-5 text-[#697084]">
-                Advanced analysis and unlimited capacity for high-output pros.
+
+              <p className="mt-1 max-w-md text-sm leading-5 text-white/80">
+                Advanced tools and insights for creators who want to grow
+                faster.
               </p>
             </div>
 
-            {/* Price */}
+            {/* PRICE */}
+
             <div className="mt-5 flex items-end">
-              <span className="text-5xl font-extrabold tracking-tight text-[#151d2f]">
-                {premiumPrice}
+              <span className="text-5xl font-extrabold tracking-tight text-white">
+                ${prices.pro.toFixed(2)}
               </span>
 
-              <span className="mb-1 ml-1 text-sm text-[#596174]">
+              <span className="mb-1 ml-1 text-sm text-white/80">
                 /month
               </span>
             </div>
 
-            {/* Upgrade Button */}
+            {/* BUTTON */}
+
             <button
               type="button"
-              onClick={startCheckout}
-              className="mt-8 h-10 w-full rounded-lg bg-[#5146e5] text-sm font-semibold text-white transition hover:bg-[#4338ca]"
+              onClick={() => startCheckout("pro", prices.pro)}
+              className="mt-8 h-10 w-full rounded-lg bg-white text-sm font-semibold text-[#5146e5] transition hover:bg-[#f3f4ff]"
             >
-              {isPremium ? "Change billing" : "Upgrade to Premium"}
+              {isPremium ? "Change billing" : "Upgrade to Pro"}
             </button>
 
-            {/* Features */}
+            {/* FEATURES */}
+
             <div className="mt-8">
-              <p className="text-xs font-extrabold uppercase tracking-wider text-[#51586a]">
-                EVERYTHING IN FREE, PLUS:
+              <p className="text-xs font-extrabold uppercase tracking-wider text-white/80">
+                EVERYTHING IN BASIC, PLUS:
               </p>
 
               <ul className="mt-4 space-y-3">
@@ -192,6 +259,79 @@ export default function Pricing() {
                 ].map((feature) => (
                   <li
                     key={feature}
+                    className="flex items-center gap-2.5 text-[15px] text-white"
+                  >
+                    <CheckCircle2
+                      size={15}
+                      strokeWidth={2}
+                      className="shrink-0 text-white"
+                    />
+
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* ==========================================
+              ENTERPRISE
+          =========================================== */}
+
+          <div className="flex h-full flex-col rounded-2xl border border-[#cfd4e3] bg-white p-8 transition hover:shadow-md">
+            {/* TITLE */}
+
+            <div>
+              <h3 className="text-xl font-bold text-[#202638]">
+                1 YEAR
+              </h3>
+
+              <p className="mt-1 max-w-md text-sm leading-5 text-[#697084]">
+                Powerful tools and dedicated support for growing teams.
+              </p>
+            </div>
+
+            {/* PRICE */}
+
+            <div className="mt-5 flex items-end">
+              <span className="text-5xl font-extrabold tracking-tight text-[#151d2f]">
+                ${prices.enterprise.toFixed(2)}
+              </span>
+
+              <span className="mb-1 ml-1 text-sm text-[#596174]">
+                /month
+              </span>
+            </div>
+
+            {/* BUTTON */}
+
+            <button
+              type="button"
+              onClick={() =>
+                startCheckout("enterprise", prices.enterprise)
+              }
+              className="mt-8 h-10 w-full rounded-lg border border-[#969caf] bg-white text-sm font-semibold text-[#30384b] transition hover:bg-[#f7f8fc]"
+            >
+              Choose Enterprise
+            </button>
+
+            {/* FEATURES */}
+
+            <div className="mt-8">
+              <p className="text-xs font-extrabold uppercase tracking-wider text-[#51586a]">
+                EVERYTHING IN PRO, PLUS:
+              </p>
+
+
+              <ul className="mt-4 space-y-3">
+                {[
+                  "Custom integrations",
+                  "Dedicated account manager",
+                  "Advanced team management",
+                  "Priority enterprise support",
+                ].map((feature) => (
+                  <li
+                    key={feature}
                     className="flex items-center gap-2.5 text-[15px] text-[#293144]"
                   >
                     <CheckCircle2
@@ -199,6 +339,7 @@ export default function Pricing() {
                       strokeWidth={2}
                       className="shrink-0 text-[#5146e5]"
                     />
+
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -207,6 +348,7 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+    </main>
     </PageShell>
   );
 }

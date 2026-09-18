@@ -21,7 +21,8 @@ import { FaHourglass } from "react-icons/fa6";
 import { OrbitProgress } from "react-loading-indicators";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaRegCircleCheck } from "react-icons/fa6";
-import { CircleCheck, Lightbulb,Share2, MapPin, Zap, TrendingUp, Clock, Copy, Check } from "lucide-react";
+import { CircleCheck, Lightbulb,Share2, MapPin, Zap, TrendingUp, Clock, Copy, Check, Link2, UploadCloud, Globe, Archive, X, FileVideo } from "lucide-react";
+import { FaYoutube } from "react-icons/fa";
 
 
 
@@ -214,6 +215,8 @@ export default function CreateContent() {
     audienceDescription: "",
     goal: "",
     channel: "",
+    existingContentUrl: "",
+    existingContent: [],
   });
   const [loading, setLoading] = useState(false);
   const [interest, setInterest] = useState([]);
@@ -281,11 +284,81 @@ export default function CreateContent() {
     setInputData((previous) => ({ ...previous, [field]: value }));
   }
 
+  function detectContentPlatform(url) {
+    const lower = url.toLowerCase();
+    if (lower.includes('tiktok.com')) return 'TikTok';
+    if (lower.includes('instagram.com')) return 'Instagram';
+    if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'YouTube';
+    return 'Link';
+  }
+
+  function handleAddContentUrl() {
+    const url = inputData.existingContentUrl.trim();
+    if (!url) return;
+
+    const newItem = {
+      id: `url-${Date.now()}`,
+      type: 'url',
+      value: url,
+      platform: detectContentPlatform(url),
+    };
+
+    setInputData((previous) => ({
+      ...previous,
+      existingContent: [...(previous.existingContent || []), newItem],
+      existingContentUrl: '',
+    }));
+  }
+
+  function addContentFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+
+    const newItems = files.map((file) => ({
+      id: `file-${Date.now()}-${file.name}`,
+      type: 'file',
+      value: file.name,
+      fileSize: file.size,
+      file,
+    }));
+
+    setInputData((previous) => ({
+      ...previous,
+      existingContent: [...(previous.existingContent || []), ...newItems],
+    }));
+  }
+
+  function handleContentFileSelect(event) {
+    addContentFiles(event.target.files);
+    event.target.value = '';
+  }
+
+  function handleContentFileDrop(event) {
+    event.preventDefault();
+    addContentFiles(event.dataTransfer.files);
+  }
+
+  function handleRemoveContentItem(id) {
+    setInputData((previous) => ({
+      ...previous,
+      existingContent: (previous.existingContent || []).filter((item) => item.id !== id),
+    }));
+  }
+
+  function formatFileSize(bytes) {
+    if (!bytes && bytes !== 0) return '';
+    const mb = bytes / (1024 * 1024);
+    return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
   function isStepValid() {
     switch (currentStepConfig.key) {
       case 'purpose':
         return Boolean(inputData.purpose);
       case 'product':
+        if (inputData.purpose === 'Existing Content') {
+          return Array.isArray(inputData.existingContent) && inputData.existingContent.length > 0;
+        }
         return Boolean(inputData.product) && Boolean(inputData.category);
       case 'audience':
         return Boolean(inputData.age) && Boolean(inputData.gender) && Array.isArray(inputData.interests) && inputData.interests.length > 0;
@@ -318,6 +391,11 @@ export default function CreateContent() {
         audience_description: inputData.audienceDescription,
         goal: inputData.goal,
         channel: inputData.channel,
+        existingContent: (inputData.existingContent || []).map((item) => ({
+          type: item.type,
+          value: item.value,
+          platform: item.platform,
+        })),
       };
 
       for (let i = 0; i < predictionProcess.length; i++) {
@@ -490,6 +568,158 @@ function Badge({ children, color, bg }) {
           </div>
         );
       case 'product':
+        if (inputData.purpose === 'Existing Content') {
+          const contentItems = inputData.existingContent || [];
+          return (
+            <div className="space-y-5">
+              <div className="flex flex-col items-center justify-center text-center">
+                <h2 className="mt-2 font-semibold tracking-[-0.04em] text-[#222222] sm:text-[36px]">
+                  Import Your Content
+                </h2>
+                <p className="mt-1.5 max-w-xl text-[16px] leading-5 text-[#667085]">
+                  Provide the existing content you want to analyze. We support direct uploads or links from major social platforms.
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-2">
+                {/* Paste URL */}
+                <div className="rounded-2xl border-2 border-[#e8eaf2] bg-white p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEEDFF]">
+                      <Link2 className="size-5 text-[#4f46e5]" />
+                    </div>
+                    <h3 className="text-[16px] font-semibold text-[#222222]">Paste URL</h3>
+                  </div>
+
+                  <div className="mt-5">
+                    <p className="text-[13px] font-semibold text-[#667085]">Supported Platforms</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {['TikTok', 'Instagram', 'YouTube'].map((platformName) => (
+                        <span key={platformName} className="rounded-full bg-[#EEEDFF] px-3 py-1 text-[12px] font-semibold text-[#4f46e5]">
+                          {platformName}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-2 rounded-xl border-2 border-[#dddddd] bg-[#fafaff] px-3 py-3 focus-within:border-[#4f46e5] focus-within:ring-2 focus-within:ring-[#eeedff]">
+                    <Globe className="size-4 shrink-0 text-[#9A9CAF]" />
+                    <input
+                      value={inputData.existingContentUrl}
+                      onChange={(event) => updateInputField('existingContentUrl', event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          handleAddContentUrl();
+                        }
+                      }}
+                      placeholder="https://tiktok.com/@user/video/..."
+                      className="w-full bg-transparent text-sm text-[#333333] outline-none placeholder:text-[#B4B6C4]"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddContentUrl}
+                    disabled={!inputData.existingContentUrl.trim()}
+                    className="mt-3 w-full rounded-lg bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Add Link
+                  </button>
+                </div>
+
+                {/* Upload File */}
+                <div className="rounded-2xl border-2 border-[#e8eaf2] bg-white p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEEDFF]">
+                      <UploadCloud className="size-5 text-[#4f46e5]" />
+                    </div>
+                    <h3 className="text-[16px] font-semibold text-[#222222]">Upload File</h3>
+                  </div>
+
+                  <label
+                    htmlFor="existing-content-upload"
+                    onDrop={handleContentFileDrop}
+                    onDragOver={(event) => event.preventDefault()}
+                    className="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d9dbea] bg-[#fafaff] px-4 py-8 text-center transition hover:border-[#4f46e5] hover:bg-[#f8f8ff]"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm">
+                      <UploadCloud className="size-5 text-[#8A8CA3]" />
+                    </div>
+                    <p className="mt-3 text-sm font-semibold text-[#222222]">Click to upload or drag and drop</p>
+                    <p className="mt-1 text-xs text-[#9A9CAF]">MP4, MOV, JPG, or PNG (max. 500MB)</p>
+                    <input
+                      id="existing-content-upload"
+                      type="file"
+                      multiple
+                      accept=".mp4,.mov,.jpg,.jpeg,.png"
+                      onChange={handleContentFileSelect}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Content to Analyze */}
+              <div className="mt-6 rounded-2xl border-2 border-[#e8eaf2] bg-white">
+                <div className="flex items-center justify-between border-b border-[#ECEDF3] px-6 py-4">
+                  <h3 className="text-[16px] font-semibold text-[#222222]">Content to Analyze</h3>
+                  <span className="rounded-full bg-[#EEEDFF] px-3 py-1 text-[12px] font-semibold text-[#4f46e5]">
+                    {contentItems.length} {contentItems.length === 1 ? 'item' : 'items'}
+                  </span>
+                </div>
+
+                {contentItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+                    <Archive className="size-8 text-[#C6C8D6]" />
+                    <p className="mt-3 text-sm font-semibold text-[#667085]">No content added yet.</p>
+                    <p className="mt-1 text-xs text-[#9A9CAF]">Paste a URL or upload a file above.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-[#ECEDF3]">
+                    {contentItems.map((item) => {
+                      const PlatformIcon =
+                        item.type === 'url'
+                          ? item.platform === 'TikTok'
+                            ? FaTiktok
+                            : item.platform === 'Instagram'
+                            ? FaInstagram
+                            : item.platform === 'YouTube'
+                            ? FaYoutube
+                            : Link2
+                          : FileVideo;
+
+                      return (
+                        <div key={item.id} className="flex items-center justify-between gap-3 px-6 py-3.5">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#EEEDFF]">
+                              <PlatformIcon className="size-4 text-[#4f46e5]" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[#333333]">{item.value}</p>
+                              <p className="text-xs text-[#9A9CAF]">
+                                {item.type === 'url' ? item.platform : formatFileSize(item.fileSize)}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveContentItem(item.id)}
+                            aria-label="Remove"
+                            className="shrink-0 rounded-lg p-1.5 text-[#9A9CAF] transition hover:bg-[#F5F5FA] hover:text-[#E64545]"
+                          >
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-5">
             <div>
@@ -873,7 +1103,7 @@ function Badge({ children, color, bg }) {
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         <main className="relative min-w-0 flex-1 transition-all duration-300 ease-in-out">
-          {!isSidebarOpen && (
+          {/* {!isSidebarOpen && (
             <button
               type="button"
               onClick={() => setIsSidebarOpen(true)}
@@ -882,7 +1112,7 @@ function Badge({ children, color, bg }) {
             >
               ☰
             </button>
-          )}
+          )} */}
 
           {isSidebarOpen && (
             <button
