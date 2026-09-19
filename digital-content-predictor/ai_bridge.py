@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 
 # This file is assumed to sit at the repo root, next to ./ai and ./ml.
 ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(ROOT))          # makes `ml.*` importable
+sys.path.insert(0, str(ROOT / "backend" / "app"))          # makes `ml.*` importable
 sys.path.insert(0, str(ROOT / "ai"))   # makes ai_service.py's own imports (content_idea, caption, hashtag, shared) importable
 
 from ai_service import AIService  # resolves to ./ai/ai_service.py
