@@ -67,7 +67,7 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm font-medium text-[#667085]">Welcome back</p>
                 <h1 className="mt-1 text-3xl font-bold tracking-[-0.04em] text-[#172033] sm:text-4xl">Ready to create your next content?</h1>
-                <span className="mt-3 inline-flex rounded-full bg-[#eeecff] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5146e5]">{plan === "premium" ? "Pro plan active" : "Free plan"}</span>
+              
               </div>
               <button onClick={() => navigate("/create-content")} className="inline-flex w-fit items-center gap-2 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4338ca]">
                 <span className="text-lg leading-none" aria-hidden="true">+</span>

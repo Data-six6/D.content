@@ -38,9 +38,9 @@ function EngagementBar({ platform, score, color, note }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, marginBottom: 6 }}>
         <span style={{ color: "#4A4C5E", fontWeight: 600 }}>{platform}</span>
-        <span style={{ color, fontWeight: 700 }}>{score}/100</span>
+        <span style={{ color, fontWeight: 700 }}>{score}</span>
       </div>
-      <div style={{ height: 8, background: "#F0F0F5", borderRadius: 999, overflow: "hidden" }}>
+      <div style={{ height: 2, background: "#F0F0F5", borderRadius: 999, overflow: "hidden" }}>
         <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 999 }} />
       </div>
       <div style={{ fontSize: 12, color: "#9A9CAF", marginTop: 4 }}>{note}</div>
@@ -131,7 +131,7 @@ export default function ContentResult({ recommendationData = {} }) {
       </div>
 
       <div>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: 16, marginBottom: 16 }}>
           <Card>
             <div className="border-b border-[#aaaaaa] pb-3">
               <CardLabel>Content Idea Recommendation</CardLabel>
@@ -166,14 +166,14 @@ export default function ContentResult({ recommendationData = {} }) {
                 <p style={{ fontSize: 13, color: "#9A9CAF" }}>No predictions available.</p>
               )}
               {predictions.map((prediction) => {
-                const score = parseInt(prediction.prediction, 10) || 0;
-                const color = score >= 85 ? "#12A77D" : score >= 70 ? "#C2185B" : "#8A8CA3";
+                const score = prediction.prediction;
+                const color = score === "High" ? "#12A77D" : score === "Medium" ? "#C2185B" : "#8A8CA3";
                 const note =
                   score >= 85 ? "High Potential" : score >= 70 ? "Medium Potential" : "Low Potential";
                 return (
                   <div key={prediction.platform_id}>
                     <div style={{ height: 18 }} />
-                    <EngagementBar platform={prediction.platform} score={score} color={color} note={note} />
+                    <EngagementBar platform={prediction.platform} score={prediction.prediction} color={color}  />
                   </div>
                 );
               })}

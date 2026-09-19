@@ -54,7 +54,7 @@ const categoryOptions = [
   "Tech",
   "Food & Beverage",
   "Home Goods",
-  "Education",
+  "Gaming",
 ];
 
 const contentTypeOptions = [
@@ -223,6 +223,7 @@ export default function CreateContent() {
   const [currentProcess, setCurrentProcess] = useState(0);
   const hasStartedPrediction = React.useRef(false);
   const [recommendationData, setRecommendationData] = useState(null);
+  const [createError, setCreateError] = useState('');
 
   useEffect(() => {
     api.get('/plan/interest')
@@ -376,37 +377,45 @@ export default function CreateContent() {
 
     setLoading(true);
     setCurrentProcess(0);
+    setCreateError('');
 
     try {
+      // Field names match the backend's createRecommendation validation
       const payload = {
-        purpose: inputData.purpose,
-        product: inputData.product,
-        category: inputData.category,
-        productDescription: inputData.productDescription,
-        age: inputData.age,
-        gender: inputData.gender,
+        plan_purpose: inputData.purpose,
+        // "Existing Content" plans skip the product step, so fall back to placeholders
+        product_name: inputData.product || 'Existing content',
+        product_category: inputData.category || 'Business',
+        product_description: inputData.productDescription,
+        demographics_age: inputData.age,
+        demographics_gender: inputData.gender,
         interests: Array.isArray(inputData.interests)
           ? inputData.interests
           : inputData.interests ? [inputData.interests] : [],
         audience_description: inputData.audienceDescription,
-        goal: inputData.goal,
-        channel: inputData.channel,
-        existingContent: (inputData.existingContent || []).map((item) => ({
-          type: item.type,
-          value: item.value,
-          platform: item.platform,
-        })),
+        plan_goal: inputData.goal,
+        plan_channel: inputData.channel,
       };
 
-      for (let i = 0; i < predictionProcess.length; i++) {
-        await delay(200);
+      // Start the request first; the progress steps animate while the AI works.
+      // Generation makes several Gemini calls, so allow a long timeout.
+      const request = api.post('/recommendation/generate', payload, { timeout: 120000 });
+      request.catch(() => {}); // avoid an unhandled-rejection warning; the error is handled below
+
+      // Animate up to the last step, which stays "in progress" until the response arrives
+      for (let i = 0; i < predictionProcess.length - 1; i++) {
+        await delay(800);
         setCurrentProcess(i + 1);
       }
 
-      await api.post('/plan/create-content', payload);
+      const { data } = await request;
+      setRecommendationData(data.recommendation || null);
       setCurrentProcess(predictionProcess.length);
     } catch (err) {
-      console.error('Create plan failed:', err.response?.data || err.message);
+      console.error('Create recommendation failed:', err.response?.data || err.message);
+      setCreateError(
+        err.response?.data?.error || 'Something went wrong while generating your recommendation.'
+      );
     } finally {
       setLoading(false);
     }
@@ -481,9 +490,9 @@ function EngagementBar({ platform, score, color, note }) {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, marginBottom: 6 }}>
         <span style={{ color: "#4A4C5E", fontWeight: 600 }}>{platform}</span>
-        <span style={{ color, fontWeight: 700 }}>{score}/100</span>
+        <span style={{ color, fontWeight: 700 }}>{score}</span>
       </div>
-      <div style={{ height: 8, background: "#F0F0F5", borderRadius: 999, overflow: "hidden" }}>
+      <div style={{ height: 2, background: "#F0F0F5", borderRadius: 999, overflow: "hidden" }}>
         <div style={{ width: `${score}%`, height: "100%", background: color, borderRadius: 999 }} />
       </div>
       <div style={{ fontSize: 12, color: "#9A9CAF", marginTop: 4 }}>{note}</div>
@@ -559,7 +568,7 @@ function Badge({ children, color, bg }) {
 
                     <div className="mt-5 text-lg font-bold text-center text-[#222222]">{option}</div>
                     <p className="mt-1 px-11 text-sm text-center leading-6 text-[#667085]">
-                      {option === 'Brand Awareness' ? 'Build visibility and recognition around your product or message.' : option === 'Lead Generation' ? 'Capture interest and convert attention into qualified leads.' : option === 'Engagement' ? 'Promote interactive conversations and stronger community connection.' : 'Turn content into direct conversion opportunities and sales activity.'}
+                      {option === 'Content Creator' ? 'Building a personal brand, engaging an audience and growing followers across social platforms.' : option === 'Business' ? 'Promoting products or services, driving sales and building corporate brand awareness.' : option === 'Existing Content' ? 'Promote interactive conversations and stronger community connection.' : 'Analyze content you have already created to predict engagement and get optimization tips.'}
                     </p>
                   </button>
                 );
@@ -727,15 +736,15 @@ function Badge({ children, color, bg }) {
               <input
                 value={inputData.product}
                 onChange={(event) => updateInputField('product', event.target.value)}
-                placeholder="Example: SaaS founders, digital marketers, skincare shoppers"
-                className="mt-2 w-full rounded-2xl border-2 border-[#dddddd] bg-[#fafaff] px-4 py-4 text-sm text-[#333333] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
+                placeholder="e.g. Facial Cleanser"
+                className="mt-2 w-full rounded-2xl border border-[#cccccc] bg-[#FcF9FF] px-4 py-4 text-sm text-[#333333] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
               />
             </div>
 
             <div>
               <h2 className="mt-3 text-[16px] font-semibold tracking-[0.004em] text-[#444444] sm:text-[16px]">Category</h2>
               <select
-                className="mt-2 w-full p-5 rounded-2xl border-2 border-[#dddddd] bg-[#fafaff] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
+                className="mt-2 w-full p-5 rounded-2xl border border-[#cccccc] bg-[#FcF9FF] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
                 value={inputData.category}
                 onChange={(event) => updateInputField('category', event.target.value)}
               >
@@ -756,8 +765,8 @@ function Badge({ children, color, bg }) {
                 value={inputData.productDescription}
                 onChange={(event) => updateInputField('productDescription', event.target.value)}
                 rows={6}
-                placeholder="Share your content goals, launch themes, or campaign direction..."
-                className="mt-2 w-full rounded-2xl border-2 border-[#dddddd] bg-[#fafaff] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
+                placeholder="Briefly describe your product, service, or topic."
+                className="mt-2 w-full rounded-2xl border border-[#cccccc] bg-[#FcF9FF] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
               />
             </div>
           </div>
@@ -766,7 +775,7 @@ function Badge({ children, color, bg }) {
         return (
           <div className="space-y-4 grid gap-4 md:grid-cols-5">
             <div className="col-span-3">
-              <div className="mt-4 rounded-xl border-[#dddddd] border-2 px-5 py-5 bg-white shadow-sm">
+              <div className="mt-4 rounded-xl border-[#dddddd] border px-5 py-5 bg-white shadow-sm">
                 <div className="flex flex-row items-center gap-1">
                   <LuNotepadText color="#3525CD" className="size-7" />
                   <h2 className="text-[22px] font-semibold tracking-[0.004em] text-[#333333] sm:text-[22px]">Demographics</h2>
@@ -813,7 +822,7 @@ function Badge({ children, color, bg }) {
                 </div>
               </div>
 
-              <div className="mt-8 rounded-xl border-2 px-5 py-5 bg-white border-[#dddddd]">
+              <div className="mt-8 rounded-xl border px-5 py-5 bg-white border-[#dddddd]">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-row items-center gap-1">
                     <PiShapesBold color="#3525CD" className="size-7" />
@@ -861,8 +870,8 @@ function Badge({ children, color, bg }) {
                 value={inputData.audienceDescription}
                 onChange={(event) => updateInputField('audienceDescription', event.target.value)}
                 rows={6}
-                placeholder="Share your content goals, launch themes, or campaign direction..."
-                className="mt-2 h-4/5 w-full rounded-2xl border border-[#aaaaaa] bg-[#fafaff] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
+                placeholder="e.g. Professional women looking for high-quality, time-saving  skincare routines..."
+                className="mt-2 h-4/5 w-full rounded-2xl border border-[#aaaaaa] bg-[#fcfaff] px-4 py-4 text-sm text-[#172033] outline-none focus:border-[#4f46e5] focus:ring-2 focus:ring-[#eeedff]"
               />
             </div>
           </div>
@@ -882,10 +891,10 @@ function Badge({ children, color, bg }) {
                     key={option}
                     type="button"
                     onClick={() => updateInputField('goal', option)}
-                    className={`rounded-2xl border-2 px-5 flex py-3 text-left transition ${isSelected ? 'border-[#4b42f1] bg-[#ffffff] shadow-sm' : 'border-[#dddddd] bg-white hover:border-[#c7c9f7] hover:bg-[#f8f8ff]'}`}
+                    className={`rounded-2xl border px-5 flex py-3 text-left transition ${isSelected ? 'border-[#4b42f1] bg-[#ffffff] shadow-sm' : 'border-[#dddddd] bg-white hover:border-[#c7c9f7] hover:bg-[#f8f8ff]'}`}
                   >
                     <div>
-                      <div className="mt-1 inline-block border-2 rounded-2xl px-2 py-3 bg-blue-100">
+                      <div className="mt-1 inline-block  rounded-2xl px-2 py-3 bg-blue-100">
                         {option === 'Maximize Reach' ? <AiOutlineStock color="#3525CD" className="size-6" /> : option === 'Drive Sales' ? <FiShoppingCart color="#3525CD" className="size-6" /> : option === 'Increase Followers' ? <MdOutlinePersonAddAlt1 color="#3525CD" className="size-6" /> : <IoMdMegaphone color="#3525CD" className="size-6" />}
                       </div>
 
@@ -965,6 +974,19 @@ function Badge({ children, color, bg }) {
                 </div>
               ))}
             </div>
+
+            {createError && (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-[15px] font-semibold text-[#C2185B]">{createError}</p>
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  className="rounded-lg bg-[#4f46e5] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4338ca]"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
           </div>
         );
       case 'review': {
@@ -997,7 +1019,7 @@ function Badge({ children, color, bg }) {
 
 
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "4fr 1fr", gap: 16, marginBottom: 16 }}>
           <Card>
             <div className="border-b border-[#aaaaaa] pb-3">
               <CardLabel >Content Idea Recommendation</CardLabel>
@@ -1032,14 +1054,14 @@ function Badge({ children, color, bg }) {
             <div style={{ marginTop: 14 }}>
               {platformPredictions.length > 0 ? (
                 platformPredictions.map((prediction) => {
-                  const score = parseInt(prediction.prediction, 10) || 0;
-                  const color = score >= 85 ? "#12A77D" : score >= 70 ? "#C2185B" : "#8A8CA3";
+                  const score = prediction.prediction;
+                  const color = score === "High" ? "#12A77D" : score === "Medium" ? "#C2185B" : "#8A8CA3";
                   const note =
                     score >= 85 ? "High Potential" : score >= 70 ? "Medium Potential" : "Low Potential";
                   return (
                     <div key={prediction.platform_id}>
                       <div style={{ height: 18 }} />
-                      <EngagementBar platform={prediction.platform} score={score} color={color} note={note} />
+                      <EngagementBar platform={prediction.platform} score={prediction.prediction} color={color} />
                     </div>
                   );
                 })
@@ -1048,8 +1070,7 @@ function Badge({ children, color, bg }) {
               )}
             </div>
             <p style={{ fontSize: 12.5, color: "#9A9CAF", marginTop: 18, lineHeight: 1.5 }}>
-              TikTok's algorithm favors this hook format for your niche right now,
-              suggesting higher reach.
+              <span>{recommendationData.platform || '—'}</span><span>'s algorithm favors this hook format for your niche right now, suggesting higher reach.</span>
             </p>
           </Card>
         </div>
@@ -1084,7 +1105,7 @@ function Badge({ children, color, bg }) {
             <div style={{ background: "#F6F5FE", borderRadius: 10, padding: 14, fontSize: 13.5, color: "#4A4C5E", lineHeight: 1.6, minHeight: 90, whiteSpace: "pre-wrap" }}>
               {activeCaption && (
                 <>
-                  {activeCaption.caption}
+                  {activeCaption.caption || '---'}
                   <br />
                   <br />
                   <span style={{ color: "#5B4FE5" }}>
@@ -1156,7 +1177,7 @@ function Badge({ children, color, bg }) {
             <div className="overflow-hidden rounded-3xl border border-[#d9dbea] bg-white shadow-[0_18px_40px_rgba(79,70,229,0.06)]">
               <div className="flex flex-col items-center border-[#e8eaf2] px-5 py-5 sm:px-7">
                 <div>
-                  <p className="text-[18px] font-bold tracking-[0.0018em] text-[#4f46e5]">Planning</p>
+                  <p className="text-[18px] font-bold tracking-[0.0018em] text-[#4f46e5]"></p>
                 </div>
 
                 <div className="mt-5 overflow-x-auto pb-1">
