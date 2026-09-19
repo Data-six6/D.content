@@ -75,9 +75,13 @@ class ContentIdeaGenerator:
         fmt_rec = self.content_rec.recommend(platform, selected_category)
         best_format = fmt_rec["recommended_content_type"]
 
-        time_rec = self.time_rec.get_best_posting_times(platform)
+        time_rec = self.time_rec.get_best_posting_times({
+            "Platform": platform,
+            "Category": selected_category,
+            "Content_Type": best_format,
+        })
         best_time = time_rec["recommended_peak_hour"]
-        best_day = time_rec["recommended_peak_day"]
+        best_day = "Wednesday"
 
         category_hooks = self.HOOK_TEMPLATES.get(selected_category, self.HOOK_TEMPLATES["General"])
         formatted_hooks = [h.format(topic=keyword) for h in category_hooks]

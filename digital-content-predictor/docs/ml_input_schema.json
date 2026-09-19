@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MeatekaMLInputSchema",
+  "description": "Pre-posting feature schema for the Meateka Digital Content Engagement & Reach Predictor. Requires 13 pre-posting features. Post-event metrics (Likes, Comments, Shares, Views, Saves, Engagement_Rate) are strictly forbidden.",
+  "type": "object",
+  "required": [
+    "Platform",
+    "Content_Type",
+    "Category",
+    "Day_of_Week",
+    "Sentiment",
+    "Influencer_Tier",
+    "Hour_of_Day",
+    "Month",
+    "Hashtag_Count",
+    "Content_Length",
+    "Follower_Count",
+    "Has_Media",
+    "Is_Verified"
+  ],
+  "properties": {
+    "Platform": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Facebook",
+        "Instagram",
+        "TikTok"
+      ],
+      "description": "Target social media distribution platform.",
+      "example": "TikTok"
+    },
+    "Content_Type": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Carousel",
+        "Duet",
+        "Live",
+        "Photo",
+        "Post",
+        "Reel",
+        "Stitch",
+        "Story",
+        "Video"
+      ],
+      "platform_constraints": {
+        "Facebook": [
+          "Post",
+          "Photo",
+          "Video",
+          "Live"
+        ],
+        "Instagram": [
+          "Photo",
+          "Video",
+          "Carousel",
+          "Reel",
+          "Story"
+        ],
+        "TikTok": [
+          "Video",
+          "Live",
+          "Duet",
+          "Stitch"
+        ]
+      },
+      "description": "Media format type of the post.",
+      "example": "Video"
+    },
+    "Category": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Business",
+        "Education",
+        "Entertainment",
+        "Fashion",
+        "Fitness",
+        "Food",
+        "Gaming",
+        "Health",
+        "Lifestyle",
+        "Sports",
+        "Technology",
+        "Travel"
+      ],
+      "description": "Domain or industry vertical of the content.",
+      "example": "Food"
+    },
+    "Day_of_Week": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "description": "Day of the week scheduled for publishing.",
+      "example": "Friday"
+    },
+    "Sentiment": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Negative",
+        "Neutral",
+        "Positive"
+      ],
+      "description": "Overall tone or emotional polarity of the caption copy.",
+      "example": "Positive"
+    },
+    "Influencer_Tier": {
+      "type": "string",
+      "required": true,
+      "allowed_values": [
+        "Macro",
+        "Micro",
+        "Mid-tier",
+        "Nano"
+      ],
+      "tier_definitions": {
+        "Nano": "1K - 10K followers",
+        "Micro": "10K - 100K followers",
+        "Mid-tier": "100K - 500K followers",
+        "Macro": "500K+ followers"
+      },
+      "description": "Audience size bracket of the creator account.",
+      "example": "Micro"
+    },
+    "Hour_of_Day": {
+      "type": "integer",
+      "required": true,
+      "minimum": 0,
+      "maximum": 23,
+      "description": "Planned posting time in 24-hour format (0 to 23).",
+      "example": 19
+    },
+    "Month": {
+      "type": "integer",
+      "required": true,
+      "minimum": 1,
+      "maximum": 12,
+      "description": "Calendar month of publication (1 = January, 12 = December). Automatically derived from planned_posting_date if provided.",
+      "example": 9
+    },
+    "Hashtag_Count": {
+      "type": "integer",
+      "required": true,
+      "minimum": 0,
+      "maximum": 30,
+      "description": "Total number of hashtags attached to the post.",
+      "example": 4
+    },
+    "Content_Length": {
+      "type": "integer",
+      "required": true,
+      "minimum": 0,
+      "maximum": 3000,
+      "description": "Character length of the caption text. Automatically calculated from caption string if provided.",
+      "example": 120
+    },
+    "Follower_Count": {
+      "type": "integer",
+      "required": true,
+      "minimum": 0,
+      "maximum": 10000000,
+      "description": "Total number of followers/subscribers of the creator.",
+      "example": 35000
+    },
+    "Has_Media": {
+      "type": "boolean",
+      "required": true,
+      "allowed_values": [
+        true,
+        false
+      ],
+      "description": "Visual media flag. Set to true for With Media (photo/video), false for Text-Only.",
+      "example": true
+    },
+    "Is_Verified": {
+      "type": "boolean",
+      "required": true,
+      "allowed_values": [
+        true,
+        false
+      ],
+      "description": "Creator badge verification flag. Set to true for Verified Creator, false for Regular Creator.",
+      "example": false
+    },
+    "caption": {
+      "type": "string",
+      "required": false,
+      "description": "Optional raw caption text. If Content_Length is omitted, Content_Length is automatically derived as len(caption.strip()).",
+      "example": "Check out this amazing street food recipe! #foodie #cooking"
+    },
+    "planned_posting_date": {
+      "type": "string",
+      "format": "date",
+      "required": false,
+      "description": "Optional planned publication date (YYYY-MM-DD). If Month is omitted, Month is automatically extracted from this date.",
+      "example": "2026-09-20"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Facebook",
+          "Instagram",
+          "TikTok"
+        ]
+      },
+      "required": false,
+      "description": "Optional list of platforms to evaluate simultaneously in platform comparison.",
+      "example": [
+        "Facebook",
+        "Instagram",
+        "TikTok"
+      ]
+    }
+  }
+}
