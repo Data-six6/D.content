@@ -566,7 +566,7 @@ function Badge({ children, color, bg }) {
                       {option === 'Content Creator' ? <FaRegUser className="size-8 fill-blue-800" /> : option === 'Business' ? <MdAddBusiness className="size-8 fill-green-700" /> : option === 'Existing Content' ? <BsFileBarGraph className="size-8 fill-violet-800" /> : <BsStars className="size-8 fill-amber-700" />}
                     </div>
 
-                    <div className="mt-5 text-lg font-bold text-center text-[#222222]">{option}</div>
+                    <div className="mt-5 text-lg font-bold text-center text-[#222222]">{option === "Business" ? "Business Owner" : option}</div>
                     <p className="mt-1 px-11 text-sm text-center leading-6 text-[#667085]">
                       {option === 'Content Creator' ? 'Building a personal brand, engaging an audience and growing followers across social platforms.' : option === 'Business' ? 'Promoting products or services, driving sales and building corporate brand awareness.' : option === 'Existing Content' ? 'Promote interactive conversations and stronger community connection.' : 'Analyze content you have already created to predict engagement and get optimization tips.'}
                     </p>

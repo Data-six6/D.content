@@ -31,6 +31,7 @@ import nika from "../assets/nika.jpg";
 import sakal from "../assets/sakal.jpg";
 import sokeng from "../assets/sokeng.jpg";
 import thymon from "../assets/thymon.jpg";
+import vanda from "../assets/vanda.jpg";
 
 const featureCards = [
   {
@@ -144,9 +145,9 @@ function MainPage() {
   { name: "Chean Channika", role: "Product Manager", image: nika },
   { name: "Thai Chansothymon", role: "Web Developer", image: thymon },
   { name: "Seng Namkea", role: "Web Developer", image: namkea },
-  { name: "Samolty Lundy", role: "Data Scientist", image: lundy },
+  { name: "Samolty Lundy", role: "Data Engineer", image: lundy },
   { name: "Por Menghong", role: "ML Engineer", image: menghong },
-  { name: "Ly Vanda", role: "ML Engineer", image: sakal },
+  { name: "Ly Vanda", role: "Data Engineer", image: vanda },
   { name: "Suon Vannsakal", role: "DevOps Engineer", image: sakal },
   
 ];
