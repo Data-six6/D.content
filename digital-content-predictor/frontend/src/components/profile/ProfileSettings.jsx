@@ -54,12 +54,29 @@ export default function ProfileSettings({ user, onProfileSave, onSecuritySave })
     return Object.keys(nextErrors).length === 0;
   }
 
-  function saveProfile(event) {
-    event.preventDefault();
-    if (!validate()) return;
-    onProfileSave({ ...values, avatar });
+ async function saveProfile(event) {
+  event.preventDefault();
+  if (!validate()) return;
+
+  setLoading(true);
+  try {
+    const { data } = await api.put('/auth/profile', {
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+    });
+
+    onProfileSave({ ...values, ...data.user, avatar });
     setNotice("Profile changes saved successfully.");
+  } catch (err) {
+    setNotice("");
+    setErrors((current) => ({
+      ...current,
+      firstName: err.response?.data?.error || "Failed to save profile.",
+    }));
+  } finally {
+    setLoading(false);
   }
+}
 
   function changeAvatar(nextAvatar) {
     setAvatar(nextAvatar);

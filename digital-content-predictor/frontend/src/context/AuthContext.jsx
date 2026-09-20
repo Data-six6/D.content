@@ -36,6 +36,16 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(readStoredUser);
   const [plan, setPlanState] = useState(readStoredPlan);
 
+  function updateProfile(patch) {
+  const next = { ...user, ...patch };
+  localStorage.setItem(USER_KEY, JSON.stringify(next));
+  setUser(next);
+}
+
+function updateSecurity(patch) {
+  updateProfile(patch);
+}
+
   function saveSession(token, nextUser) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
@@ -89,7 +99,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), signIn, signUp, signInDemo, signOut }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: Boolean(user), signIn, signUp, signInDemo, signOut, updateProfile, updateSecurity }}>
       {children}
     </AuthContext.Provider>
   );

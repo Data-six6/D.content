@@ -37,6 +37,13 @@ class User {
     );
     return rows[0]?.password_hash ?? null;
   }
+
+  static async updateName(userId, firstName, lastName) {
+  await db.query(
+    'UPDATE users SET first_name = ?, last_name = ? WHERE user_id = ?',
+    [firstName, lastName, userId]
+  );
+}
 }
 
 module.exports = User;

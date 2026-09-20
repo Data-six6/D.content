@@ -34,7 +34,36 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: 'Failed to register user' });
   }
 };
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
+    const firstName = req.body.firstName?.trim();
+    const lastName = req.body.lastName?.trim();
+
+    if (!firstName || !lastName) {
+      return res.status(400).json({ error: 'First name and last name are required' });
+    }
+
+    await User.updateName(userId, firstName, lastName);
+    const user = await User.findById(userId);
+
+    return res.json({
+      user: {
+        userId: user.user_id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
 exports.login = async (req, res) => {
   try {
     const { email, password_hash: password } = req.body;
