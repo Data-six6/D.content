@@ -1,0 +1,6 @@
+category: str,
+        product: str,
+        target_audience: str,
+        goal: str,
+        platform: str,
+        content_purpose: str = "Content Creator",

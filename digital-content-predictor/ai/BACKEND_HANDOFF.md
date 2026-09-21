@@ -4,21 +4,21 @@
 
 ### 1. Install Dependencies
 ```bash
-pip install google-genai python-dotenv
+pip install google-genai python-dotenv fastapi uvicorn pydantic
 ```
 
 ### 2. Environment Variables
-Create a `.env` file with your Google Gemini API key(s):
+Create `ai/.env` with your Google Gemini API keys:
 ```
 GOOGLE_API_KEY_1=your_first_key_here
 GOOGLE_API_KEY_2=your_second_key_here
 GOOGLE_API_KEY_3=your_third_key_here
+GOOGLE_API_KEY_4=your_fourth_key_here
 ```
 
-Multiple keys are supported for automatic rotation when quota is exceeded.
+You can add as many keys as you want. The code auto-loads all `GOOGLE_API_KEY_*` variables.
 
 ### 3. Folder Structure
-Place the `ai/` folder at the same level as your `backend/` folder:
 ```
 project-root/
 ├── ai/           ← This module
@@ -27,11 +27,12 @@ project-root/
 │   ├── caption/
 │   ├── hashtag/
 │   └── shared/
-└── backend/      ← Your FastAPI code
+├── ai_bridge.py  ← Python bridge (connects Node.js to AI)
+├── backend/      ← Node.js backend
+└── frontend/     └── React frontend
 ```
 
 ### 4. Import in Backend
-Add the project root to Python path, then import:
 ```python
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'ai'))
@@ -43,11 +44,11 @@ ai = AIService()
 
 ---
 
-## Main API Methods
+## Main API Method
 
 ### `generate_single_request()` (Recommended — 1 API call)
 
-Optimized method that generates everything in **ONE API call** instead of 4. Same output format, 75% less API usage.
+Generates a complete content plan in **ONE API call** instead of 4.
 
 ```python
 response = ai.generate_single_request(
@@ -59,27 +60,6 @@ response = ai.generate_single_request(
     content_purpose="Content Creator",
 )
 ```
-
-**Usage:** 1 API call per request (vs 4 for `generate_combined_response`).
-
----
-
-### `generate_combined_response()` (Legacy — 4 API calls)
-
-Original method using 4 separate API calls. Same output format, but uses 4x more API quota. Kept for backward compatibility.
-
-```python
-response = ai.generate_combined_response(
-    category="Gaming",
-    product="Mobile Legends Account",
-    target_audience="MOBA players aged 16-25",
-    goal="Increase Followers",
-    platform="TikTok",
-    content_purpose="Content Creator",
-)
-```
-
-**Usage:** 4 API calls per request (1 for idea + 3 for captions).
 
 **Input Parameters:**
 
@@ -110,17 +90,17 @@ response = ai.generate_combined_response(
     {
       "platform": "TikTok",
       "caption": "This MLBB account is actually insane...",
-      "hashtag": "#MobileLegends #MLBB #MLBBAccount"
+      "hashtag": "#MobileLegends #MLBB #Gaming"
     },
     {
       "platform": "Instagram",
       "caption": "Imagine stepping into the Land of Dawn...",
-      "hashtag": "#MLBB #Gaming #MobileLegends"
+      "hashtag": "#MLBB #Gaming"
     },
     {
       "platform": "Facebook",
       "caption": "After testing countless accounts...",
-      "hashtag": "#MobileLegends #MLBB"
+      "hashtag": "#MobileLegends"
     }
   ],
   "ideas": [
@@ -128,14 +108,8 @@ response = ai.generate_combined_response(
       "idea_name": "POV: You just unlocked the ultimate MLBB account",
       "content_type": "Short Video",
       "alternates": [
-        {
-          "idea_name": "Alternative idea 2",
-          "content_type": "Short Video"
-        },
-        {
-          "idea_name": "Alternative idea 3",
-          "content_type": "Short Video"
-        }
+        {"idea_name": "Alternative idea 2", "content_type": "Short Video"},
+        {"idea_name": "Alternative idea 3", "content_type": "Short Video"}
       ]
     }
   ]
@@ -182,8 +156,6 @@ response = ai.generate_combined_response(
 | `ideas[0].idea_name` | str | Main content idea |
 | `ideas[0].content_type` | str | "Short Video", "Image", "Carousel", or "Text Post" |
 | `ideas[0].alternates` | array | 2-3 alternative ideas |
-| `ideas[0].alternates[].idea_name` | str | Alternative idea text |
-| `ideas[0].alternates[].content_type` | str | Same as main idea's content type |
 
 ---
 
@@ -243,17 +215,6 @@ safety = ai.check_safety(text)
 
 ---
 
-## Method Comparison
-
-| Method | API Calls | Speed | Output |
-|--------|-----------|-------|--------|
-| `generate_single_request()` | **1** | **2-3 sec** | Same format |
-| `generate_combined_response()` | 4 | 8-12 sec | Same format |
-
-**Recommendation:** Use `generate_single_request()` to save 75% of API quota.
-
----
-
 ## Error Handling
 
 | Scenario | What Happens | What to Show User |
@@ -261,7 +222,7 @@ safety = ai.check_safety(text)
 | All API keys exhausted | Returns empty response | "Service temporarily unavailable. Please try again." |
 | Single API call fails | Automatic retry (3 attempts) with key rotation | Nothing (handled internally) |
 | API server overloaded (503) | Automatic retry with backoff | Nothing (handled internally) |
-| Safety check fails | Caption still returned, safety marked unavailable | Content shown normally |
+| Safety check fails | Caption still returned | Content shown normally |
 
 ---
 
@@ -269,11 +230,11 @@ safety = ai.check_safety(text)
 
 1. **Retry is built-in** — each function retries up to 3 times with exponential backoff. Do NOT wrap in another retry loop.
 
-2. **Key rotation is automatic** — when one API key hits quota, it automatically tries the next key. If all 3 keys are exhausted, the function returns empty results.
+2. **Key rotation is automatic** — when one API key hits quota, it automatically tries the next key.
 
-3. **Safety check runs internally** — the safety check runs inside `generate_caption()` but its result is not included in the combined response (backend team's format doesn't have a field for it).
+3. **Model used**: `gemini-3.1-flash-lite` (15 RPM, 500 RPD per key)
 
-4. **Hashtags come WITH # prefix** — in the combined response, hashtags are formatted as `"#tag1 #tag2 #tag3"` (single string with # prefixes).
+4. **Hashtags come WITH # prefix** — in the combined response, hashtags are formatted as `"#tag1 #tag2 #tag3"` (single string with # prefixes, no duplicates).
 
 5. **Content types are always one of**: `"Short Video"`, `"Image"`, `"Carousel"`, `"Text Post"`.
 
@@ -283,16 +244,32 @@ safety = ai.check_safety(text)
 
 ---
 
+## Testing
+
+### Test locally
+```bash
+cd ai
+python -c "from ai_service import AIService; ai = AIService(); print(ai.generate_single_request('Gaming', 'MLBB Account', 'MOBA players', 'Drive Sales', 'TikTok'))"
+```
+
+### Test with Gradio
+```bash
+cd ai
+python app.py
+```
+
+---
+
 ## Troubleshooting
 
 **Q: All requests return empty results.**
-A: Check your API keys in `.env`. Verify they are valid in Google AI Studio.
+A: Check your API keys in `ai/.env`. Verify they are valid in Google AI Studio.
 
 **Q: Getting 429 quota errors.**
-A: The free tier allows 20 requests/day per key. Add more keys or wait for daily reset. Consider enabling billing in Google AI Studio.
+A: The free tier allows 500 requests/day per key. Add more keys or wait for daily reset.
 
 **Q: Getting 503 server errors.**
-A: Temporary Gemini server overload. The retry logic handles this automatically. If persistent, wait a few minutes.
+A: Temporary Gemini server overload. The retry logic handles this automatically.
 
 **Q: How do I test locally?**
 A: Run `python app.py` from the `ai/` folder. This launches a Gradio web interface for testing.

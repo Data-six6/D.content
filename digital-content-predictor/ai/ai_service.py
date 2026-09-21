@@ -140,8 +140,24 @@ class AIService:
                 captions = result.get("captions", {})
                 return self._format_single_response(result, captions)
 
+            except RuntimeError as e:
+                error_str = str(e)
+                if "exhausted" in error_str.lower():
+                    print(f"[ai_service] {error_str}")
+                    raise
+                print(f"[ai_service] Attempt {attempt + 1} failed: {error_str}")
+                if attempt < 2:
+                    time.sleep(3 * (attempt + 1))
+
             except Exception as e:
+                error_str = str(e)
                 print(f"[ai_service] Attempt {attempt + 1} failed: {e}")
+
+                if "503" in error_str or "UNAVAILABLE" in error_str or "overload" in error_str.lower():
+                    wait = 5 * (attempt + 1)
+                    print(f"[ai_service] Server overloaded, retrying in {wait}s...")
+                    time.sleep(wait)
+                    continue
                 if attempt < 2:
                     time.sleep(3 * (attempt + 1))
 
@@ -155,7 +171,7 @@ class AIService:
             cap_data = captions.get(platform_name, {})
             caption_text = cap_data.get("caption", "")
             hashtags_list = cap_data.get("hashtags", [])
-            hashtag_str = " ".join(f"#{h}" for h in hashtags_list)
+            hashtag_str = " ".join(f"#{h.lstrip("#")}" for h in hashtags_list)
 
             captions_list.append({
                 "platform": platform_name,
@@ -236,7 +252,7 @@ class AIService:
             cap_data = captions_result.get(platform_name, {})
             caption_text = cap_data.get("caption", "")
             hashtags_list = cap_data.get("hashtags", [])
-            hashtag_str = " ".join(f"#{h}" for h in hashtags_list)
+            hashtag_str = " ".join(f"#{h.lstrip("#")}" for h in hashtags_list)
 
             captions_list.append({
                 "platform": platform_name,
