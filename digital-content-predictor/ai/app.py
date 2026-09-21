@@ -3,6 +3,7 @@ Gradio testing interface for Meateka AI functions.
 Run with: python app.py  (from the ai/ folder)
 """
 
+import time
 import gradio as gr
 
 from ai_service import AIService
@@ -90,10 +91,30 @@ def format_safety_result(result):
         return f"### Flagged\n\n**Reason:** {result.get('reason', 'No reason provided')}"
 
 
+_last_request_time = 0
+_min_request_interval = 10
+
+
 def run_full_plan(category, product, audience, goal, platform, purpose):
+    global _last_request_time
+
+    if not category or not product:
+        return "### Error\n\nPlease fill in Category and Product/Service."
+
+    elapsed = time.time() - _last_request_time
+    if elapsed < _min_request_interval:
+        wait = int(_min_request_interval - elapsed)
+        return f"### Please wait\n\nRate limit: wait {wait}s before next request."
+
+    _last_request_time = time.time()
+
     try:
         plan = ai.generate_single_request(category, product, audience, goal, platform, purpose)
         return format_combined_plan(plan)
+    except RuntimeError as e:
+        if "exhausted" in str(e).lower():
+            return "### All API Keys Exhausted\n\nAll API keys have reached their daily limit. Please wait until midnight UTC for the quota to reset, or add more API keys to your .env file."
+        return f"### Error\n\n{str(e)}"
     except Exception as e:
         return f"### Error\n\nSomething went wrong: {e}\n\nPlease try again."
 

@@ -8,6 +8,7 @@ Run from the repo root (so `ml.*`, `content_idea.*`, `shared.*` all import):
     uvicorn ai_bridge:app --host 127.0.0.1 --port 8000
 """
 
+import os
 import sys
 from pathlib import Path
 from typing import List, Literal, Optional
@@ -22,6 +23,7 @@ sys.path.insert(0, str(ROOT / "ai"))   # makes ai_service.py's own imports (cont
 
 from ai_service import AIService  # resolves to ./ai/ai_service.py
 from ml.prediction.predictor import predict_ml_plan  # resolves to ./ml/prediction/predictor.py
+from shared.gemini_client import MODELS  # model fallback chain
 
 app = FastAPI()
 ai = AIService()
@@ -49,6 +51,21 @@ def build_target_audience(p: PlanInput) -> str:
     return text
 
 
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "keys_loaded": len([
+            k for k in [
+                os.environ.get("GOOGLE_API_KEY_1", ""),
+                os.environ.get("GOOGLE_API_KEY_2", ""),
+                os.environ.get("GOOGLE_API_KEY_3", ""),
+            ] if k
+        ]),
+        "models": MODELS,
+    }
+
+
 @app.post("/recommendation")
 def recommendation(p: PlanInput):
     # ai_service only knows "Content Creator" / "Business Owner"
@@ -60,15 +77,20 @@ def recommendation(p: PlanInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ML prediction failed: {e}")
 
-    # 2. Gemini content generation (retries internally, then returns an empty response)
-    content = ai.generate_single_request(
-        category=p.product_category,
-        product=p.product_name,
-        target_audience=build_target_audience(p),
-        goal=p.plan_goal,
-        platform=p.plan_channel,
-        content_purpose=content_purpose,
-    )
+    # 2. Gemini content generation (1 API call, retries internally)
+    try:
+        content = ai.generate_single_request(
+            category=p.product_category,
+            product=p.product_name,
+            target_audience=build_target_audience(p),
+            goal=p.plan_goal,
+            platform=p.plan_channel,
+            content_purpose=content_purpose,
+        )
+    except RuntimeError as e:
+        if "exhausted" in str(e):
+            raise HTTPException(status_code=429, detail="All API keys exhausted. Please try again later.")
+        raise HTTPException(status_code=502, detail=f"AI generation failed: {str(e)[:200]}")
     if not content.get("idea"):
         raise HTTPException(status_code=502, detail="AI generation returned an empty result")
 
